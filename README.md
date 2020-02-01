@@ -1,4 +1,4 @@
-# Censored regression with parametric models
+# Examples of toal functions
 
 ## Getting started
 

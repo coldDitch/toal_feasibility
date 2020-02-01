@@ -282,7 +282,7 @@ def active_learning(problem, training_size, test_size, projectpath, seed, active
     revealed_x = np.empty(0)
     revealed_y = np.empty(0)
     plot_run(train_x, train_y, query_x, query_y, test_x, test_y,
-             samples, revealed_x, revealed_y, run_name+'0')
+             samples, revealed_x, revealed_y, run_name+'-0')
     save_data(dat_save, samples, test_y)
     for iteration in range(steps):
         data = {'projectpath': projectpath, 'train_x': train_x, 'train_y': train_y,
@@ -304,7 +304,7 @@ def active_learning(problem, training_size, test_size, projectpath, seed, active
         samples = fit_model(projectpath, train_x, train_y, query_x, test_x,
                             test_y)
         plot_run(train_x, train_y, query_x, query_y, test_x, test_y,
-                 samples, revealed_x, revealed_y, run_name + str(iteration + 1))
+                 samples, revealed_x, revealed_y, run_name + '-' + str(iteration + 1))
         save_data(dat_save, samples, test_y)
     print(dat_save)
 
