@@ -40,3 +40,25 @@ def linear_test(projectpath, x, y, cx, xtest, ytest):
     fit = model.sampling(data=dat, seed=194838, chains=4, iter=2000)
     return fit.extract(permuted=True)
 
+
+def multi_decision(projectpath, x, y, d, cx, cd, xtest, ytest):
+    bayesname = "multidecision_lin"
+    folder = "linearmodel/"
+    bayespath = projectpath + folder + bayesname + '.stan'
+    dat = {'n': len(x),
+           'nd': 5:, #todo breaks if d doesnt have a sample for each decision
+           'd': d,
+           'x': x,
+           'y': y,
+           'cn': len(cx),
+           'cx': cx,
+           'cd': cd,
+           'ntest': len(xtest),
+           'xtest': xtest,
+           'ytest': ytest
+           }
+    modelname = bayesname
+    model = stan_utility.compile_model(
+        bayespath, model_name=modelname, model_path=projectpath+'stancodes/')
+    fit = model.sampling(data=dat, seed=194838, chains=4, iter=2000)
+    return fit.extract(permuted=True)

@@ -12,6 +12,32 @@ def generate_params(seed):
     coef_2 = np.random.uniform(-20, 20)
     return coef_1, coef_2 
 
+def generate_multidecision_dataset(problem, training_size, test_size, seed):
+    num_decisions = 5
+    num_queries = 5
+    std = 5
+    col_train = []
+    col_query = []
+    col_test = []
+    query_x = covariate_dist(num_queries, 'uniform')
+    query_d = np.random.randint(1, num_decisions+1, num_queries)
+    query_y = np.zeros(num_queries)
+    train_x = covariate_dist(training_size, 'uniform')
+    train_d = np.random.randint(1, num_decisions+1, training_size)
+    train_y = np.zeros(training_size)
+    test_x = covariate_dist(test_size, 'uniform')
+    test_y = np.zeros((test_size, num_decisions))
+    for i in range(1, num_decisions + 1):
+        slope, intercept = generate_params(seed+i)
+        query_y[query_d==i] = slope * query_x[query_d==i] + intercept + np.random.normal(0, std, len(query_x[query_d==i]))
+        train_y[train_d==i] = slope * train_x[train_d==i] + intercept + np.random.normal(0, std, len(train_x[train_d==i]))
+        test_y[:,i-1] = slope * test_x + intercept + np.random.normal(0, std, test_size)
+
+    train = (train_x, train_y, train_d)
+    query = (query_x, query_y, query_d)
+    test = (test_x, test_y)
+        
+    return (train, query), test
 
 def generate_datasets(problem, training_size, test_size, seed):
     if problem == "linear":
@@ -44,6 +70,8 @@ def choose_fit(problem):
         return rbfhelpers.rbf_test
     elif problem == "test_case":
         return rbfhelpers.rbf_test
+    elif problem == 'multilin':
+        return linearhelpers.multi_decision
     else:
         print("Problem not specified correctly")
         return
@@ -86,9 +114,9 @@ def generate_rbf(radial_1, radial_2, N=30, x_dist='uniform', std=5):
     return (x, y)
 
 
-def generate_linear(slope, intercept, N=30, x_dist='uniform', std=5):
-    x = covariate_dist(x_dist)
-    y = beta * x + intercept + np.random.normal(0, std, N)
+def generate_linear(slope, intercept, N=30, x_dist='uniform', std=2):
+    x = covariate_dist(N, x_dist)
+    y = slope * x + intercept + np.random.normal(0, std, N)
     return (x, y)
 
 

@@ -12,18 +12,18 @@ matplotlib.use('tkagg')
 font = {'size': 10}
 matplotlib.rc('font', **font)
 path = './res/'
-task = 'rbf'
+task = 'multilin'
+train_data = 10
+test_data = 30
 paths = []
 colors = ['b', 'r', 'y', 'g', 'c']
-train_data = 5
-test_data = 30
-queries = 3
-methods = ['eig', 'msetoal', 'avgtoal', 'sixthtoal']
+queries = 1
+methods = ['random', 'uncer_y', 'decision_ig']
 paths_y = ['-' + name + '-' + str(train_data) + '-' + str(test_data) + '-' +
            str(queries) for name in methods]
-models = [ 'EIG', 'MSE-TOAL', 'AVG-TOAL','6th-TOAL', 'UNCER'] #, 'RANDOM', 'UNCER']
-y_args = ['y_mse', 'logl', 'y_ent', 'y_avg', 'mseutil', 'avgutil', 'sixthutil']
-names = ["MSE",'Likelihood', 'ENTROPY', 'AVG error', 'H(MSE)', 'H(AVG)','H(6th)']
+models = ['RANDOM', 'UNCER', 'DECISION IG']
+y_args = ['acc']
+names = ["ACCURACY"]
 plot_args = y_args
 paths.extend(paths_y)
 args = len(plot_args)
