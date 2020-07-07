@@ -14,11 +14,8 @@ def generate_params(seed):
 
 def generate_multidecision_dataset(problem, training_size, test_size, seed):
     num_decisions = 5
-    num_queries = 5
+    num_queries = 10
     std = 5
-    col_train = []
-    col_query = []
-    col_test = []
     query_x = covariate_dist(num_queries, 'uniform')
     query_d = np.random.randint(1, num_decisions+1, num_queries)
     query_y = np.zeros(num_queries)
