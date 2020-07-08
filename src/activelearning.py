@@ -11,7 +11,7 @@ from GPyOpt.methods import BayesianOptimization
 from GPy.models import GPRegression
 
 # matplotlib.use('tkagg')
-PLOT_DATA_AND_MODEL = False
+PLOT_DATA_AND_MODEL = True
 PLOT_EXPECTED_ENTROPY = False
 
 
@@ -32,9 +32,9 @@ def entropy_of_maximizer_decision(sampledata, name):
     for i in range(num_samples):
         entropy = 0
         for decision in range(decisions):
-            prob = 1
+            prob = 1 / num_samples**decisions
             for d in range(decisions):
-                prob *= sum(samples[:, i, d] <= samples[:, i, decision]) / num_samples
+                prob *= np.sum(samples[:, i, d] <= samples[:, i, decision])
             if prob != 0:
                 entropy -= prob * np.log(prob)
         entropies.append(entropy)

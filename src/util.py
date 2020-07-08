@@ -13,9 +13,9 @@ def generate_params(seed):
     return coef_1, coef_2 
 
 def generate_multidecision_dataset(problem, training_size, test_size, seed):
-    num_decisions = 5
+    num_decisions = 10
     num_queries = 10
-    std = 5
+    std = 1
     query_x = covariate_dist(num_queries, 'uniform')
     query_d = np.random.randint(1, num_decisions+1, num_queries)
     query_y = np.zeros(num_queries)
@@ -144,6 +144,13 @@ def bootstrap_results(dat, prctile=[5, 95]):
     ret[2, :] = np.percentile(means, prctile[1], axis=0)
     return ret
 
+def mean_conf(dat):
+    N, Nq = dat.shape
+    ret = np.empty((3, Nq))
+    ret[0, :] = np.mean(dat, axis=0)
+    ret[1, :] = ret[0, :] - np.std(dat, axis=0)/np.sqrt(N)
+    ret[2, :] = ret[0, :] + np.std(dat, axis=0)/np.sqrt(N)
+    return ret
 
 def shadedplot(x, y, fill=True, label='', color='b'):
     # y[0,:] mean, median etc; in the middle

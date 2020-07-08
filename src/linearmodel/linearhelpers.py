@@ -46,7 +46,7 @@ def multi_decision(projectpath, x, y, d, cx, cd, xtest, ytest):
     folder = "linearmodel/"
     bayespath = projectpath + folder + bayesname + '.stan'
     dat = {'n': len(x),
-           'nd': 5, #todo breaks if d doesnt have a sample for each decision
+           'nd': 10, #todo breaks if d doesnt have a sample for each decision
            'd': d,
            'x': x,
            'y': y,

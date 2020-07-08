@@ -14,16 +14,16 @@ matplotlib.rc('font', **font)
 path = './res/'
 task = 'multilin'
 train_data = 10
-test_data = 30
+test_data = 50
 paths = []
 colors = ['b', 'r', 'y', 'g', 'c']
-queries = 1
+queries = 2
 methods = ['random', 'uncer_y', 'decision_ig']
 paths_y = ['-' + name + '-' + str(train_data) + '-' + str(test_data) + '-' +
            str(queries) for name in methods]
 models = ['RANDOM', 'UNCER', 'DECISION IG']
-y_args = ['acc']
-names = ["ACCURACY"]
+y_args = ['acc', 'logl']
+names = ["ACCURACY", "LOG LIKELIHOOD OF PREDICTIONS"]
 plot_args = y_args
 paths.extend(paths_y)
 args = len(plot_args)
@@ -45,7 +45,7 @@ for i in range(len(paths)):
             metric.append(np.array(x[plot_args[j]]))
         metric = np.array(metric)
         t = np.arange(metric.shape[1])
-        res = bootstrap_results(metric)
+        res = mean_conf(metric)
         plt.subplot(3, max((1,round(args / 2))), j + 1)
         plt.title(names[j])
         plt.plot(t, np.mean(metric, axis=0), color=colors[i])
