@@ -6,9 +6,9 @@
 - Activate environment and install requirements by
 ``` pip install -r requirements.txt ```
 
-- Create folders for temporary files such as stan binaries and plots
+- Create folders for temporary files and install python environment
 (Helper)
-``` sh testruns/setup.sh ```
+``` source setup.sh ```
 
 ## Running tests
 - Linear example
