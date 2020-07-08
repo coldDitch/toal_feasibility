@@ -18,6 +18,6 @@
 
 	eg. 
 	
-	```python activelearning.py test_case 6 6 ./ 1234 avgtoal 1```
+	```python activelearning.py multilin 6 6 ./ 1234 decision_ig 1```
 
-	```python activelearning.py rbf 20 20 ./ 1234 eig 5```
+	```python activelearning.py multilin 20 20 ./ 4321 random 5```
