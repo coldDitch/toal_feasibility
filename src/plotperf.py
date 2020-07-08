@@ -13,16 +13,16 @@ font = {'size': 10}
 matplotlib.rc('font', **font)
 path = './res/'
 task = 'multilin'
-train_data = 10
-test_data = 50
+train_data = 20
+test_data = 30
 paths = []
 colors = ['b', 'r', 'y', 'g', 'c']
-queries = 2
+queries = 3
 methods = ['random', 'uncer_y', 'decision_ig']
 paths_y = ['-' + name + '-' + str(train_data) + '-' + str(test_data) + '-' +
            str(queries) for name in methods]
 models = ['RANDOM', 'UNCER', 'DECISION IG']
-y_args = ['acc', 'logl']
+y_args = ['acc']
 names = ["ACCURACY", "LOG LIKELIHOOD OF PREDICTIONS"]
 plot_args = y_args
 paths.extend(paths_y)
