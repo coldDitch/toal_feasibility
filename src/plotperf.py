@@ -14,10 +14,10 @@ matplotlib.rc('font', **font)
 path = './res/'
 task = 'multilin'
 train_data = 20
-test_data = 30
+test_data = 50
 paths = []
 colors = ['b', 'r', 'y', 'g', 'c']
-queries = 3
+queries = 5
 methods = ['random', 'uncer_y', 'decision_ig']
 paths_y = ['-' + name + '-' + str(train_data) + '-' + str(test_data) + '-' +
            str(queries) for name in methods]

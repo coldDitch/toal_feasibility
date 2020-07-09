@@ -12,7 +12,7 @@ def generate_params(seed):
     return coef_1, coef_2 
 
 def generate_multidecision_dataset(problem, training_size, test_size, seed):
-    num_decisions = 10
+    num_decisions = 30
     num_queries = 10
     std = 1
     # query set from which model chooses x and d, for which we reveal y

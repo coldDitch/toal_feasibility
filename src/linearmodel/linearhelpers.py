@@ -27,7 +27,7 @@ def multi_decision(projectpath, train, query, test):
     folder = "linearmodel/"
     bayespath = projectpath + folder + bayesname + '.stan'
     dat = {'n': len(train['x']),
-           'nd': 10, #todo breaks if d doesnt have a sample for each decision
+           'nd': 30, #todo breaks if d doesnt have a sample for each decision
            'd': train['d'],
            'x': train['x'],
            'y': train['y'],
