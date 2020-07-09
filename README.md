@@ -6,6 +6,8 @@
 - Activate environment and install requirements by
 ``` pip install -r requirements.txt ```
 
+or alternatively using virtualenv
+
 - Create folders for temporary files and install python environment
 (Helper)
 ``` source setup.sh ```
