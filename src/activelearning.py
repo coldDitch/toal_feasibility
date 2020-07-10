@@ -68,17 +68,17 @@ def toal(samples, fit_model, data, objective_utility, entropy_fun):
     return i_star
 
 def entropy_of_maximizer_decision(sampledata, name):
-    decisions = int(sampledata["num_decisions"][0])
+    decisions = int(sampledata["num_decisions"][0]) #todo pass number of decisions smarter way
     samples = sampledata["mu_test"]
-    print(samples.shape)
     entropies = []
-    num_samples = samples.shape[1]
-    for i in range(num_samples):
+    num_data = samples.shape[1]
+    for i in range(num_data):
         entropy = 0
         for decision in range(decisions):
-            prob = 1 / num_samples**decisions
+            maximizers = np.ones(samples.shape[0], dtype=bool)
             for d in range(decisions):
-                prob *= np.sum(samples[:, i, d] <= samples[:, i, decision])
+                maximizers = np.logical_and((samples[:, i, d] <= samples[:, i, decision]), maximizers)
+            prob = np.sum(maximizers) / len(maximizers)
             if prob != 0:
                 entropy -= prob * np.log(prob)
         entropies.append(entropy)
