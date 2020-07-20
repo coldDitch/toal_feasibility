@@ -1,8 +1,96 @@
+import random
 import numpy as np
+import pandas as pd
 import numpy.random as rndm
-from linearmodel import linearhelpers
 import matplotlib.pyplot as plt
 from scipy.stats import norm
+from linearmodel import linearhelpers
+
+def generate_dataset(problem, training_size, test_size, query_size, decision_n, seed):
+    if problem == 'acic':
+        return generate_acic_dataset(problem, training_size, test_size, query_size, decision_n, seed)
+    elif problem == 'synthetic':
+        return generate_multidecision_dataset(problem, training_size, test_size, query_size, decision_n, seed)
+    else:
+        print("CHOOSE PROPER DATASET")
+
+
+def is_categorical(val):
+    return val.dtype==np.dtype('O')
+
+def to_binary(val):
+    uniques = np.unique(val)
+    mat = np.zeros((len(val),len(uniques)))
+    for i in range(len(uniques)):
+        byte_arr = (val == uniques[i]).astype('b')
+        mat[:, i] = byte_arr
+    return mat
+
+def covariate_matrix():
+    df = pd.read_csv('../../datasets/data_cf_all/x.csv')
+    col = []
+    for key in df.keys():
+        covariate = df[key].values
+        if is_categorical(covariate):
+            col.append(to_binary(covariate))
+        else:
+            col.append(covariate.reshape(-1,1))
+    col = np.concatenate(col,axis=1)
+    return col
+
+def normalize(mat):
+    mean = np.mean(mat, axis=0)
+    l = len(mean) if type(mean) is np.ndarray else 1
+    mat = mat - mean
+    std = np.array(np.std(mat, axis=0))
+    std = np.max((std,np.ones(l)))
+    mat = mat / std
+    return mat, mean, std
+
+def acic_covariates():
+    mat = covariate_matrix()
+    mat, _, _ = normalize(mat)
+    return mat
+
+def acic_labels():
+    df = pd.read_csv('../../datasets/data_cf_all/1/zymu_13.csv')
+    potential_outcomes = df[['y0', 'y1']].values
+    treatments = df['z'].values
+    outcomes = np.array([potential_outcomes[i, treatments[i]] for i in range(len(treatments))])
+    outcomes, mean, std = normalize(outcomes)
+    potential_outcomes = (potential_outcomes - mean) / std
+    return outcomes, treatments, potential_outcomes
+
+def generate_acic_dataset(p, training_size, test_size, query_size, decision_n, seed):
+    np.random.seed(seed)
+    num_queries = query_size
+    covariates = acic_covariates()
+    outcomes, treatments, potential_outcomes = acic_labels()
+    indexes = np.random.choice(len(treatments), training_size + test_size + num_queries, replace=False)
+    ind_train = indexes[:training_size]
+    ind_test = indexes[training_size:training_size+test_size]
+    ind_query = indexes[training_size+test_size:num_queries+training_size+test_size]
+    #TODO dataleak here
+    train = {
+        'x': covariates[ind_train],
+        'd': treatments[ind_train],
+        'y': outcomes[ind_train]
+    }
+    test = {
+        'x': covariates[ind_test],
+        'y': potential_outcomes[ind_test]
+    }
+    query = {
+        'x': covariates[ind_query],
+        'd': treatments[ind_query],
+        'y': outcomes[ind_query]
+    }
+    revealed = {
+        'x': np.empty(0),
+        'd': np.empty(0),
+        'y': np.empty(0)
+    }
+    return train, query, test, revealed
 
 
 def generate_params(seed):
@@ -11,22 +99,21 @@ def generate_params(seed):
     coef_2 = np.random.uniform(-20, 20)
     return coef_1, coef_2 
 
-def generate_multidecision_dataset(problem, training_size, test_size, seed):
-    num_decisions = 10
-    num_queries = 10
+def generate_multidecision_dataset(problem, training_size, test_size, query_size, decision_n, seed):
+    num_queries = query_size
     std = 1
     # query set from which model chooses x and d, for which we reveal y
     query_x = covariate_dist(num_queries)
-    query_d = np.random.randint(1, num_decisions+1, num_queries)
+    query_d = np.random.randint(1, decision_n+1, num_queries)
     query_y = np.zeros(num_queries)
     # initial data for training 
     train_x = covariate_dist(training_size)
-    train_d = np.random.randint(1, num_decisions+1, training_size)
+    train_d = np.random.randint(1, decision_n+1, training_size)
     train_y = np.zeros(training_size)
     # test set, for test set outcome for all decisions are known to find the best decision
     test_x = covariate_dist(test_size)
-    test_y = np.zeros((test_size, num_decisions))
-    for i in range(1, num_decisions + 1):
+    test_y = np.zeros((test_size, decision_n))
+    for i in range(1, decision_n + 1):
         slope, intercept = generate_params(seed+i)
         query_y[query_d==i] = slope * query_x[query_d==i] + intercept + np.random.normal(0, std, len(query_x[query_d==i]))
         train_y[train_d==i] = slope * train_x[train_d==i] + intercept + np.random.normal(0, std, len(train_x[train_d==i]))
@@ -55,6 +142,7 @@ def generate_multidecision_dataset(problem, training_size, test_size, seed):
     sort_by_covariates(test)
     return train, query, test, revealed
 
+
 def sort_by_covariates(dat):
     sort_index = np.argsort(dat['x'])
     for d in dat.keys():
@@ -64,7 +152,7 @@ def covariate_dist(N):
     return np.random.random(N)*9 - 4.5
 
 def choose_fit(problem):
-    if problem == 'multilin':
+    if problem == 'linear':
         return linearhelpers.multi_decision
     else:
         print('CHOOSE PROPER PROBLEM')

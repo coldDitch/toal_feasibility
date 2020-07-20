@@ -21,21 +21,30 @@ import sys
 sys.path.insert(1, '../')
 import stan_utility
 
+def to_two_dim(x):
+    tx = np.atleast_2d(x)
+    tx = tx.reshape(len(x), -1)
+    return tx
+
 
 def multi_decision(projectpath, train, query, test):
     bayesname = "multidecision_lin"
-    folder = "linearmodel/"
+    folder = "bayesmodels/"
     bayespath = projectpath + folder + bayesname + '.stan'
-    dat = {'n': len(train['x']),
-           'nd': 10, #todo breaks if d doesnt have a sample for each decision
+    x = to_two_dim(train['x'])
+    cx = to_two_dim(query['x'])
+    xtest = to_two_dim(test['x'])
+    dat = {'n': x.shape[0],
+           'k': x.shape[1],
+           'nd': test['y'].shape[1], #todo breaks if d doesnt have a sample for each decision
            'd': train['d'],
-           'x': train['x'],
+           'x': x,
            'y': train['y'],
-           'cn': len(query['x']),
-           'cx': query['x'],
+           'cn': len(cx),
+           'cx': cx,
            'cd': query['d'],
-           'ntest': len(test['x']),
-           'xtest': test['x'],
+           'ntest': len(xtest),
+           'xtest': xtest,
            'ytest': test['y']
            }
     modelname = bayesname

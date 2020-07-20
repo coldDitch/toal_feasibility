@@ -12,4 +12,4 @@ which python
 env | sort
 
 source activate /scratch/work/kylmaoj1/ana3
-srun /scratch/work/kylmaoj1/ana3/bin/python activelearning.py multilin 10 30 ./ $SLURM_ARRAY_TASK_ID random 1
+srun /scratch/work/kylmaoj1/ana3/bin/python activelearning.py ./ $SLURM_ARRAY_TASK_ID random 1

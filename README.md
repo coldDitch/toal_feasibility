@@ -13,13 +13,28 @@ or alternatively using virtualenv
 ``` source setup.sh ```
 
 ## Running tests
-- Linear example
+- Setting up config file
+	- Choose:
+		- Dataset
+		- Model
+		- Size of the training set
+		- Size of the test set
+		- Number of possible decisions
+		- Number of possible queries
+
+- Running code 
 	- The active learning for the functions can be run by:
 
-	```python activelearning.py [model_function] [train_n] [test_n] [path] [seed] [acquisition] [queries] ```
+	```python activelearning.py [path] [seed] [acquisition] [queries] ```
 
 	eg. 
-	
-	```python activelearning.py multilin 6 6 ./ 1234 decision_ig 1```
 
-	```python activelearning.py multilin 20 20 ./ 4321 random 5```
+	```python activelearning.py ./ 4321 random 5```
+	
+	```python activelearning.py ./ 1234 decision_ig 1```
+
+- Running on triton
+	- Modify array length to obtain more runs
+
+	- Change acquisition and query numbers
+	```sbatch run_triton.sh```

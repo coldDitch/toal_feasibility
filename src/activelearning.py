@@ -1,8 +1,9 @@
 import sys
+import config
 import pickle
 import numpy as np
 import random
-from util import choose_fit, generate_multidecision_dataset, shadedplot, plot_run
+from util import choose_fit, generate_multidecision_dataset, shadedplot, plot_run, generate_dataset
 import matplotlib
 import matplotlib.pyplot as plt
 
@@ -41,7 +42,7 @@ def toal(samples, fit_model, data, objective_utility, entropy_fun):
 
             # create new training set for the model
             train = {
-                'x': np.append(data['train']['x'], data['query']['x'][i]),
+                'x': np.append(data['train']['x'], np.atleast_2d(data['query']['x'][i]),axis=0) if type(data['query']['x'][i]) is np.ndarray else np.append(data['train']['x'], data['query']['x'][i]),
                 'd': np.append(data['train']['d'], data['query']['d'][i]),
                 'y': np.append(data['train']['y'], y_star)
             } 
@@ -127,13 +128,20 @@ def save_data(dat_save, samples, test):
     dat_save["acc"].append(decision_acc(samples, test))
 
 
-def active_learning(problem, training_size, test_size, projectpath, seed, active_learning_func, steps, fit_model, criterion):
+def active_learning(projectpath, seed, criterion, steps):
+    active_learning_func = choose_criterion(criterion)
+    decision_n = config.decision_n
+    training_size = config.train_n
+    test_size = config.test_n
+    query_size = config.query_n
+    fit_model = choose_fit(config.model)
+    problem = config.dataset
     np.random.seed(seed)
     variables = ['x', 'd', 'y']
     run_name = problem + '-' + criterion + "-" + \
         str(training_size) + "-" + str(test_size) + \
         "-" + str(steps) + "-" + str(seed)
-    train, query, test, revealed = generate_multidecision_dataset(problem, training_size, test_size, seed)
+    train, query, test, revealed = generate_dataset(problem, training_size, test_size, query_size, decision_n, seed)
 
     # true probability of censoring
     print("missing shape")
@@ -156,10 +164,17 @@ def active_learning(problem, training_size, test_size, projectpath, seed, active
         new_ind = active_learning_func(samples, fit_model, data)
         print("Iteration " + str(iteration) + ". Acquire point at index " +
               str(new_ind) + ": x=" + str(query['x'][new_ind]))
+        print("train", train['x'].shape)
+        print("query", query['x'][new_ind].shape)
         for v in variables:
-            train[v] = np.append(train[v], query[v][new_ind])
+            if type(query[v][new_ind]) is np.ndarray:
+                train[v] = np.append(train[v], np.atleast_2d(query[v][new_ind]), axis=0)
+            else:
+                train[v] = np.append(train[v], query[v][new_ind])
             revealed[v] = np.append(revealed[v], query[v][new_ind])
-            query[v] = np.delete(query[v], new_ind)
+            query[v] = np.delete(query[v], new_ind, axis=0)
+        print("train", train['x'].shape)
+        print("query", query['x'].shape)
         samples = fit_model(projectpath, train, query, test)
         save_data(dat_save, samples, test)
         plot_run(samples, test, revealed, run_name+'-'+str(iteration), PLOT_DATA_AND_MODEL)
@@ -172,17 +187,13 @@ def active_learning(problem, training_size, test_size, projectpath, seed, active
 
 
 def main():
-    problem = sys.argv[1]
-    training_size = int(sys.argv[2])
-    test_size = int(sys.argv[3])
-    projectpath = sys.argv[4]
-    seed = int(sys.argv[5])
-    criterion = sys.argv[6]
-    active_learning_steps = int(sys.argv[7])
-    active_learning_func = choose_criterion(criterion)
-    fit_model = choose_fit(problem)
-    active_learning(problem, training_size, test_size,
-                    projectpath, seed, active_learning_func, active_learning_steps, fit_model, criterion)
+    projectpath = sys.argv[1]
+    seed = int(sys.argv[2])
+    criterion = sys.argv[3]
+    active_learning_steps = int(sys.argv[4])
+    #active_learning_func = choose_criterion(criterion)
+    #fit_model = choose_fit(problem)
+    active_learning(projectpath, seed, criterion, active_learning_steps)
 
 
 if __name__ == "__main__":
