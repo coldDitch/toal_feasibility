@@ -4,7 +4,7 @@ import pandas as pd
 import numpy.random as rndm
 import matplotlib.pyplot as plt
 from scipy.stats import norm
-from linearmodel import linearhelpers
+from bayesmodels import linearhelpers
 
 def generate_dataset(problem, training_size, test_size, query_size, decision_n, seed):
     if problem == 'acic':
@@ -53,7 +53,7 @@ def acic_covariates():
     return mat
 
 def acic_labels():
-    df = pd.read_csv('../../datasets/data_cf_all/1/zymu_13.csv')
+    df = pd.read_csv('../../datasets/data_cf_all/1/zymu_336720327.csv')
     potential_outcomes = df[['y0', 'y1']].values
     treatments = df['z'].values
     outcomes = np.array([potential_outcomes[i, treatments[i]] for i in range(len(treatments))])
