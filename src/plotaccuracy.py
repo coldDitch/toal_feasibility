@@ -12,12 +12,12 @@ matplotlib.use('tkagg')
 font = {'size': 10}
 matplotlib.rc('font', **font)
 path = './res/'
-task = 'multilin'
-train_data = 20
-test_data = 50
+task = 'acic'
+train_data = 100
+test_data = 100
 paths = []
 colors = ['b', 'r', 'y', 'g', 'c']
-queries = 5
+queries = 1
 methods = ['random', 'uncer_y', 'decision_ig']
 paths_y = ['-' + name + '-' + str(train_data) + '-' + str(test_data) + '-' +
            str(queries) for name in methods]

@@ -1,10 +1,12 @@
 import random
+import math
 import numpy as np
 import pandas as pd
 import numpy.random as rndm
 import matplotlib.pyplot as plt
 from scipy.stats import norm
 from bayesmodels import linearhelpers
+import config
 
 def generate_dataset(problem, training_size, test_size, query_size, decision_n, seed):
     if problem == 'acic':
@@ -27,7 +29,7 @@ def to_binary(val):
     return mat
 
 def covariate_matrix():
-    df = pd.read_csv('../../datasets/data_cf_all/x.csv')
+    df = pd.read_csv(config.acic_path + 'x.csv')
     col = []
     for key in df.keys():
         covariate = df[key].values
@@ -52,25 +54,44 @@ def acic_covariates():
     mat, _, _ = normalize(mat)
     return mat
 
-def acic_labels():
-    df = pd.read_csv('../../datasets/data_cf_all/1/zymu_336720327.csv')
+def acic_labels(fil):
+    df = pd.read_csv(config.acic_path + fil)
     potential_outcomes = df[['y0', 'y1']].values
     treatments = df['z'].values
+    #treatments = np.random.randint(1, size=potential_outcomes.shape[0]) 
     outcomes = np.array([potential_outcomes[i, treatments[i]] for i in range(len(treatments))])
-    outcomes, mean, std = normalize(outcomes)
-    potential_outcomes = (potential_outcomes - mean) / std
+    treatments = treatments + 1
     return outcomes, treatments, potential_outcomes
 
 def generate_acic_dataset(p, training_size, test_size, query_size, decision_n, seed):
     np.random.seed(seed)
     num_queries = query_size
+    num_files = int(math.ceil(decision_n / 2))
     covariates = acic_covariates()
-    outcomes, treatments, potential_outcomes = acic_labels()
+    num_samples = len(covariates)
+    outcomes = []
+    treatments = []
+    potential_outcomes = []
+    for i in range(num_files):
+        outcome, treatment, potential_outcome = acic_labels(config.acic_files[i])
+        low = int(num_samples * i / num_files)
+        high = int(num_samples * (i+1) / num_files)
+        outcomes.append(outcome[low:high])
+        treatments.append(treatment[low:high]+i*2)
+        potential_outcomes.append(potential_outcome)
+    outcomes = np.concatenate(outcomes, axis=0)
+    treatments = np.concatenate(treatments, axis=0)
+    potential_outcomes = np.concatenate(potential_outcomes, axis=1)
     indexes = np.random.choice(len(treatments), training_size + test_size + num_queries, replace=False)
     ind_train = indexes[:training_size]
     ind_test = indexes[training_size:training_size+test_size]
     ind_query = indexes[training_size+test_size:num_queries+training_size+test_size]
-    #TODO dataleak here
+
+    # normalize using the known training outcomes
+    outcomes[ind_train], mean, std = normalize(outcomes[ind_train])
+    outcomes[ind_test] = (outcomes[ind_test] - mean) / std
+    outcomes[ind_query] = (outcomes[ind_query] - mean) / std
+
     train = {
         'x': covariates[ind_train],
         'd': treatments[ind_train],

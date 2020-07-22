@@ -18,9 +18,9 @@ parameters {
     vector<lower=1e-3>[nd] sigmay;
 }
 model {
-    sigmay ~ normal(1, 10);
-    to_vector(beta) ~ normal(0, 10);
-    alpha ~ normal(0, 10);
+    sigmay ~ inv_gamma(2, 2);
+    to_vector(beta) ~ normal(0, 1);
+    alpha ~ normal(0, 1);
     for(j in 1:nd){
         for(i in 1:n) {
             if(j == d[i]){

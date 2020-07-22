@@ -178,6 +178,7 @@ def active_learning(projectpath, seed, criterion, steps):
         samples = fit_model(projectpath, train, query, test)
         save_data(dat_save, samples, test)
         plot_run(samples, test, revealed, run_name+'-'+str(iteration), PLOT_DATA_AND_MODEL)
+    print(np.mean(samples['beta'], axis=0))
     print(dat_save)
     dat_save['querydvals'] = revealed['d']
     dat_save['queryxvals'] = revealed['x']
