@@ -37,7 +37,7 @@ def multi_decision(projectpath, train, query, test):
     dat = {'n': x.shape[0],
            'k': x.shape[1],
            'nd': test['y'].shape[1], #todo breaks if d doesnt have a sample for each decision
-           'd': train['d'],
+           'd': train['d'].astype(int),
            'x': x,
            'y': train['y'],
            'cn': len(cx),
@@ -50,5 +50,6 @@ def multi_decision(projectpath, train, query, test):
     modelname = bayesname
     model = stan_utility.compile_model(
         bayespath, model_name=modelname, model_path=projectpath+'stancodes/')
-    fit = model.sampling(data=dat, seed=194838, chains=4, iter=2000)
+    fit = model.sampling(data=dat, seed=194838, chains=4, iter=4000)
+    stan_utility.check_all_diagnostics(fit)
     return fit.extract(permuted=True)

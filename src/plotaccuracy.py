@@ -13,8 +13,8 @@ font = {'size': 10}
 matplotlib.rc('font', **font)
 path = './res/'
 task = 'acic'
-train_data = 100
-test_data = 100
+train_data = 99
+test_data = 1000
 paths = []
 colors = ['b', 'r', 'y', 'g', 'c']
 queries = 1

@@ -1,3 +1,5 @@
+
+
 data {
     int<lower=0> n;                     // number of data points
     int<lower=1> nd;   // number of decisions
@@ -34,7 +36,6 @@ generated quantities {
     matrix[ntest, nd] mu_test;
     real py[cn];
     real mu[cn];
-    int num_decisions = nd;
     for(i in 1:ntest){
         for(j in 1:nd){
             mu_test[i, j] = beta[j] * xtest[i]' + alpha[j];

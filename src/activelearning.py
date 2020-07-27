@@ -1,4 +1,5 @@
 import sys
+import stan_utility
 import config
 import pickle
 import numpy as np
@@ -6,6 +7,7 @@ import random
 from util import choose_fit, generate_multidecision_dataset, shadedplot, plot_run, generate_dataset
 import matplotlib
 import matplotlib.pyplot as plt
+import timeit
 
 PLOT_DATA_AND_MODEL = False
 PLOT_EXPECTED_ENTROPY = False
@@ -69,7 +71,7 @@ def toal(samples, fit_model, data, objective_utility, entropy_fun):
     return i_star
 
 def entropy_of_maximizer_decision(sampledata, name):
-    decisions = int(sampledata["num_decisions"][0]) #todo pass number of decisions smarter way
+    decisions = config.decision_n
     samples = sampledata["mu_test"]
     entropies = []
     num_data = samples.shape[1]
@@ -86,8 +88,6 @@ def entropy_of_maximizer_decision(sampledata, name):
     return np.mean(entropies)
 
 
-    
-
 def choose_criterion(criterion):
     # choose acquisition criterion which returns the index for the next acquisition
     if criterion == "random":
@@ -99,8 +99,6 @@ def choose_criterion(criterion):
     else:
         print("Activelearning not specified correctly")
         return
-
-
 
 
 def decision_acc(samples, test):
@@ -121,6 +119,7 @@ def decision_acc(samples, test):
         if model_decision == best_decision:
             correct_count += 1
     return correct_count / test['y'].shape[0]
+
 
 def save_data(dat_save, samples, test):
     print("SAVING")
@@ -178,8 +177,6 @@ def active_learning(projectpath, seed, criterion, steps):
         samples = fit_model(projectpath, train, query, test)
         save_data(dat_save, samples, test)
         plot_run(samples, test, revealed, run_name+'-'+str(iteration), PLOT_DATA_AND_MODEL)
-    print(np.mean(samples['beta'], axis=0))
-    print(dat_save)
     dat_save['querydvals'] = revealed['d']
     dat_save['queryxvals'] = revealed['x']
     dat_save['queryyvals'] = revealed['y']

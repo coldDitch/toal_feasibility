@@ -56,7 +56,7 @@ def acic_covariates():
 
 def acic_labels(fil):
     df = pd.read_csv(config.acic_path + fil)
-    potential_outcomes = df[['y0', 'y1']].values
+    potential_outcomes = df[['mu0', 'mu1']].values
     treatments = df['z'].values
     #treatments = np.random.randint(1, size=potential_outcomes.shape[0]) 
     outcomes = np.array([potential_outcomes[i, treatments[i]] for i in range(len(treatments))])
