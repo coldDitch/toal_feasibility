@@ -123,8 +123,9 @@ def decision_acc(samples, test):
 
 def save_data(dat_save, samples, test):
     print("SAVING")
-    dat_save["logl"].append(np.mean(np.exp(samples['logl'])))
+    #dat_save["logl"].append(np.mean(np.exp(samples['logl'])))
     dat_save["acc"].append(decision_acc(samples, test))
+    dat_save["dent"].append(entropy_of_maximizer_decision(samples, test))
 
 
 def active_learning(projectpath, seed, criterion, steps):
@@ -150,9 +151,10 @@ def active_learning(projectpath, seed, criterion, steps):
     dat_save = {
         "logl": [],
         "acc": [],
+        "dent": []
     }
     samples = fit_model(projectpath, train, query, test)
-    plot_run(samples, test, revealed, run_name+'-0', PLOT_DATA_AND_MODEL)
+    plot_run(samples, test, train, revealed, run_name+'-0', PLOT_DATA_AND_MODEL)
     save_data(dat_save, samples, test)
     for iteration in range(steps):
         data = {'projectpath': projectpath,
@@ -176,7 +178,9 @@ def active_learning(projectpath, seed, criterion, steps):
         print("query", query['x'].shape)
         samples = fit_model(projectpath, train, query, test)
         save_data(dat_save, samples, test)
-        plot_run(samples, test, revealed, run_name+'-'+str(iteration), PLOT_DATA_AND_MODEL)
+        plot_run(samples, test, train, revealed, run_name+'-'+str(iteration), PLOT_DATA_AND_MODEL)
+    print(dat_save)
+    print(train['d'])
     dat_save['querydvals'] = revealed['d']
     dat_save['queryxvals'] = revealed['x']
     dat_save['queryyvals'] = revealed['y']

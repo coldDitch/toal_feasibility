@@ -6,10 +6,10 @@ data {
     int<lower=1> k;
     matrix[n, k] x;                       // explanatory variable
     vector[n] y;          // response variable
-    vector[n] d;
+    int d[n];
     int<lower=0> cn;
     matrix[cn, k] cx;
-    vector[cn] cd;
+    int cd[cn];
     int<lower=0> ntest;
     matrix[ntest, k] xtest;
     matrix[ntest, nd] ytest;
@@ -20,9 +20,9 @@ parameters {
     vector<lower=1e-3>[nd] sigmay;
 }
 model {
-    sigmay ~ inv_gamma(2, 2);
-    to_vector(beta) ~ normal(0, 1);
-    alpha ~ normal(0, 1);
+    sigmay ~ normal(0, 1);
+    to_vector(beta) ~ normal(0, 10);
+    alpha ~ normal(0, 10);
     for(j in 1:nd){
         for(i in 1:n) {
             if(j == d[i]){

@@ -51,5 +51,32 @@ def multi_decision(projectpath, train, query, test):
     model = stan_utility.compile_model(
         bayespath, model_name=modelname, model_path=projectpath+'stancodes/')
     fit = model.sampling(data=dat, seed=194838, chains=4, iter=4000)
-    stan_utility.check_all_diagnostics(fit)
+    #stan_utility.check_all_diagnostics(fit)
+    return fit.extract(permuted=True)
+
+def gp(projectpath, train, query, test):
+    bayesname = "gp"
+    folder = "bayesmodels/"
+    bayespath = projectpath + folder + bayesname + '.stan'
+    x = to_two_dim(train['x'])
+    cx = to_two_dim(query['x'])
+    xtest = to_two_dim(test['x'])
+    dat = {'n': x.shape[0],
+           'k': x.shape[1],
+           'nd': test['y'].shape[1], #todo breaks if d doesnt have a sample for each decision
+           'd': train['d'].astype(int),
+           'x': x,
+           'y': train['y'],
+           'cn': len(cx),
+           'cx': cx,
+           'cd': query['d'],
+           'ntest': len(xtest),
+           'xtest': xtest,
+           'ytest': test['y']
+           }
+    modelname = bayesname
+    model = stan_utility.compile_model(
+        bayespath, model_name=modelname, model_path=projectpath+'stancodes/')
+    fit = model.sampling(data=dat, seed=194838, chains=4, iter=4000)
+    #stan_utility.check_all_diagnostics(fit)
     return fit.extract(permuted=True)

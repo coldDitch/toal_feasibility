@@ -175,6 +175,8 @@ def covariate_dist(N):
 def choose_fit(problem):
     if problem == 'linear':
         return linearhelpers.multi_decision
+    elif problem == 'gp':
+        return linearhelpers.gp
     else:
         print('CHOOSE PROPER PROBLEM')
 
@@ -197,24 +199,42 @@ def shadedplot(x, y, fill=True, label='', color='b'):
         plt.fill_between(x, y[1, :], y[2, :], color=c, alpha=0.25)
 
 
-def plot_run(samples, test, revealed, run_name, plot):
+def plot_run(samples, test, train, revealed, run_name, plot):
     if not plot:
         return
     print("Plotting")
-    decisions = int(samples['num_decisions'][0])
-    np.random.seed(1234)
-    for decision in range(decisions):
-        res = np.empty((3, test['x'].shape[0]))
-        mu = samples["mu_test"][:,:,decision]
-        res[0] = np.mean(mu, axis=0)
-        res[1] = res[0]+np.std(mu, axis=0)
-        res[2] = res[0]-np.std(mu, axis=0)
-        color = np.random.rand(3,)
-        shadedplot(test['x'], res, color=color, label='prediction d='+str(decision))
-        if revealed['x'].shape[0] > 0:
-            rev_ind = [revealed['d']==decision+1]
-            plt.scatter(revealed['x'][rev_ind], revealed['y'][rev_ind], color=color, label='query d='+str(decision))
-    plt.legend()
-    plt.savefig('./plots/'+run_name+'.png')
-    plt.show()
-    plt.clf()
+    test['x'] = test['x'].reshape(test['x'].shape[0], -1)
+    train['x'] = train['x'].reshape(train['x'].shape[0], -1)
+    for cov in range(test['x'].shape[1]):
+        marg_dat = {
+        'x': train['x'][:,cov],
+        'y': train['y'],
+        'd': train['d']
+        }
+        sort_by_covariates(marg_dat)
+        decisions = config.decision_n
+        np.random.seed(1234)
+        for decision in range(decisions):
+            res = np.empty((3, test['x'].shape[0]))
+            mu = samples["mu_test"][:,:,decision]
+            plot_dat = {
+                'x': test['x'][:,cov],
+                'mu': mu.T
+            }
+            sort_by_covariates(plot_dat)
+            res[0] = np.mean(plot_dat['mu'].T, axis=0)
+            res[1] = res[0]+np.std(plot_dat['mu'].T, axis=0)
+            res[2] = res[0]-np.std(plot_dat['mu'].T, axis=0)
+            color = np.random.rand(3,)
+            shadedplot(plot_dat['x'], res, color=color, label='prediction d='+str(decision))
+            if revealed['x'].shape[0] > 0:
+                revealed['x'] = revealed['x'].reshape(revealed['x'].shape[0], -1)
+                rev_ind = [revealed['d']==decision+1]
+                plt.scatter(revealed['x'][:,cov][rev_ind], revealed['y'][rev_ind], color=color, label='query d='+str(decision))
+            else:
+                #plt.scatter(test['x'], test['y'][:,decision])
+                plt.scatter(marg_dat['x'][decision+1==marg_dat['d']], marg_dat['y'][decision+1==marg_dat['d']], color=color)
+        plt.legend()
+        plt.savefig('./plots/'+run_name+'.png')
+        plt.show()
+        plt.clf()
