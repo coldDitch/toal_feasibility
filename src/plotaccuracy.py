@@ -13,7 +13,7 @@ font = {'size': 10}
 matplotlib.rc('font', **font)
 path = './res/'
 task = 'acic'
-train_data = 10
+train_data = 30
 test_data = 1
 paths = []
 colors = ['b', 'r', 'y', 'g', 'c']
@@ -40,7 +40,7 @@ for i in range(len(paths)):
             x = pickle.load(f)
         print("x_query")
         print(x["queryxvals"])
-        metric.append(np.array(x['acc']))
+        metric.append(np.array(x['dent']))
     metric = np.array(metric)
     t = np.arange(metric.shape[1])
     res = mean_conf(metric)

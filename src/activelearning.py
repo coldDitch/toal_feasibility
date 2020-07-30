@@ -9,9 +9,6 @@ import matplotlib
 import matplotlib.pyplot as plt
 import timeit
 
-PLOT_DATA_AND_MODEL = False
-PLOT_EXPECTED_ENTROPY = False
-
 
 def random_sampling(samples, fit_model, data):
     #acquistion function which chooses next query randomly
@@ -59,7 +56,7 @@ def toal(samples, fit_model, data, objective_utility, entropy_fun):
     plt.plot(data['query']['x'], expected_utils)
     i_star = np.argmin(expected_utils)
     x_star = data['query']['x'][i_star]
-    if PLOT_EXPECTED_ENTROPY:
+    if config.plot_run:
         print("MINIMUM")
         print(x_star)
         plt.title('h(' + objective_utility+')')
@@ -142,7 +139,6 @@ def active_learning(projectpath, seed, criterion, steps):
         str(training_size) + "-" + str(test_size) + \
         "-" + str(steps) + "-" + str(seed)
     train, query, test, revealed = generate_dataset(problem, training_size, test_size, query_size, decision_n, seed)
-
     # true probability of censoring
     print("missing shape")
     print(query['x'].shape)
@@ -154,7 +150,7 @@ def active_learning(projectpath, seed, criterion, steps):
         "dent": []
     }
     samples = fit_model(projectpath, train, query, test)
-    plot_run(samples, test, train, revealed, run_name+'-0', PLOT_DATA_AND_MODEL)
+    plot_run(samples, test, train, revealed, run_name+'-0', config.plot_run)
     save_data(dat_save, samples, test)
     for iteration in range(steps):
         data = {'projectpath': projectpath,
@@ -178,7 +174,7 @@ def active_learning(projectpath, seed, criterion, steps):
         print("query", query['x'].shape)
         samples = fit_model(projectpath, train, query, test)
         save_data(dat_save, samples, test)
-        plot_run(samples, test, train, revealed, run_name+'-'+str(iteration), PLOT_DATA_AND_MODEL)
+        plot_run(samples, test, train, revealed, run_name+'-'+str(iteration), config.plot_run)
     print(dat_save)
     print(train['d'])
     dat_save['querydvals'] = revealed['d']
