@@ -97,70 +97,54 @@ functions {
 
 data {
     int<lower=0> n;       // number of data points
-    int<lower=1> nd;      // number of decisions
     int<lower=1> k;
     matrix[n, k] x;       // explanatory variable
     vector[n] y;          // response variable
-    vector[n] d;
     int<lower=0> cn;
     matrix[cn, k] cx;
-    int cd[cn];
     int<lower=0> ntest;
     matrix[ntest, k] xtest;
-    matrix[ntest, nd] ytest;
+    vector[ntest] ytest;
 }
 
 transformed data {
+  vector[n] mean_f = rep_vector(0, n);
   real delta = 1e-9;
 }
 
 parameters {
-  vector<lower=0>[k] rho[nd];
-  real<lower=0> sq_alpha[nd];
-  real<lower=1e-3> sigma[nd];
+  vector<lower=0>[k] rho;
+  real<lower=0> sq_alpha;
+  real<lower=delta> sigma;
 }
 
 model {
+  matrix[n, n] L_K;
+  matrix[n, n] K;
   // priors
-  for (i in 1:nd)
-    rho[i] ~ inv_gamma(1, 1);
+  rho ~ inv_gamma(1, 1);
   sq_alpha ~ normal(0, 50);
   sigma ~ inv_gamma(1, 1);
 
   // likelihood computation
-  for (i in 1:nd) {
-    int sub_n = count_decisions(d, i, n);
-    vector[sub_n] mean_f = rep_vector(0, sub_n);
-    matrix[sub_n, k] x_sub = sub_covariate_matrix(x, d, i, n, k);
-    vector[sub_n] y_sub = sub_outcome_vector(y, d, i, n);
-    matrix[sub_n, sub_n] L_K;
-    matrix[sub_n, sub_n] K;
-    K = cov_exp_quad_multidim(sq_alpha[i], rho[i], x_sub, sub_n);
-    // diagonal elements
-    for (j in 1:sub_n)
-      K[j, j] = K[j, j] + sigma[i];
-    L_K = cholesky_decompose(K);
-    y_sub ~ multi_normal_cholesky(mean_f, L_K);
-  }
+  K = cov_exp_quad_multidim(sq_alpha, rho, x, n);
+  // diagonal elements
+  for (j in 1:n)
+    K[j, j] = K[j, j] + sigma;
+  L_K = cholesky_decompose(K);
+  y ~ multi_normal_cholesky(mean_f, L_K);
 }
 
 generated quantities {
-  matrix[ntest, nd] mu_test;
-  matrix[cn, nd] mu_mat;
+  real logl;
+  vector[ntest] u_bar;
   vector[cn] mu;
-  vector[cn] py;
+  real py[cn];
 
-  for(i in 1:nd) {
-    int sub_n = count_decisions(d, i, n);
-    matrix[sub_n, k] x_sub = sub_covariate_matrix(x, d, i, n, k);
-    vector[sub_n] y_sub = sub_outcome_vector(y, d, i, n);
-    mu_test[:, i] = gp_combine_rng(xtest, y_sub, x_sub, sq_alpha[i], rho[i], sigma[i], delta);
-    mu_mat[:, i] = gp_combine_rng(cx, y_sub, x_sub, sq_alpha[i], rho[i], sigma[i], delta);
-  }
+  u_bar = gp_combine_rng(xtest, y, x, sq_alpha, rho, sigma, delta);
+  // not sure if correct
+  logl = normal_lpdf(ytest|u_bar,sigma);
 
-  for(i in 1:cn) {
-    mu[i] = mu_mat[i, cd[i]];
-    py[i] = normal_rng(mu[i], sigma[cd[i]]);
-  }
-
+  mu = gp_combine_rng(cx, y, x, sq_alpha, rho, sigma, delta);
+  py = normal_rng(mu, sigma);
 }

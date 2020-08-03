@@ -174,7 +174,7 @@ def covariate_dist(N):
 
 def choose_fit(problem):
     if problem == 'linear':
-        return linearhelpers.multi_decision
+        return linearhelpers.fit_full
     elif problem == 'gp':
         return linearhelpers.gp
     else:

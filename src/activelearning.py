@@ -5,26 +5,27 @@ import pickle
 import numpy as np
 import random
 from util import choose_fit, generate_multidecision_dataset, shadedplot, plot_run, generate_dataset
+from bayesmodels.linearhelpers import fit_full, fit_update
 import matplotlib
 import matplotlib.pyplot as plt
 import timeit
 
 
-def random_sampling(samples, fit_model, data):
+def random_sampling(samples, data):
     #acquistion function which chooses next query randomly
     return random.randint(0, len(data['query']['x'])-1)
 
 
-def uncertainty_sampling_y(samples, fit_model, data):
+def uncertainty_sampling_y(samples, data):
     #acquisition function which chooses next query based on largest uncertainty
     var = np.var(samples['py'], axis=0)
     return np.argmax(var)
 
-def decision_ig(samples, fit_model, data):
+def decision_ig(samples, data):
     #acquisition which minimizes entropy of 
-    return toal(samples, fit_model, data, 'decision_ig', entropy_of_maximizer_decision)
+    return toal(samples, data, 'decision_ig', entropy_of_maximizer_decision)
 
-def toal(samples, fit_model, data, objective_utility, entropy_fun):
+def toal(samples, data, objective_utility, entropy_fun):
 
     def f(x):
         i = np.where(np.isclose(data['query']['x'], x).reshape(-1))[0][0]
@@ -40,13 +41,8 @@ def toal(samples, fit_model, data, objective_utility, entropy_fun):
             y_star = np.sqrt(2)*sd_x*yy + mu_x  # for substitution
 
             # create new training set for the model
-            train = {
-                'x': np.append(data['train']['x'], np.atleast_2d(data['query']['x'][i]),axis=0) if type(data['query']['x'][i]) is np.ndarray else np.append(data['train']['x'], data['query']['x'][i]),
-                'd': np.append(data['train']['d'], data['query']['d'][i]),
-                'y': np.append(data['train']['y'], y_star)
-            } 
             # fit model again
-            samples_new = fit_model(data['projectpath'], train, data['query'], data['test'])
+            samples_new = fit_update(data['projectpath'], data['train'], data['query'], data['test'], data['query']['x'][i], data['query']['d'][i], y_star, samples)
             H = entropy_fun(samples_new, objective_utility)
             expected_entropy += H * weights[ii] * 1/np.sqrt(np.pi)
         return expected_entropy
@@ -69,7 +65,7 @@ def toal(samples, fit_model, data, objective_utility, entropy_fun):
 
 def entropy_of_maximizer_decision(sampledata, name):
     decisions = config.decision_n
-    samples = sampledata["mu_test"]
+    samples = sampledata["u_bar"]
     entropies = []
     num_data = samples.shape[1]
     for i in range(num_data):
@@ -109,7 +105,7 @@ def decision_acc(samples, test):
             if test['y'][i, j] > decision_util:
                 decision_util = test['y'][i, j]
                 best_decision = j
-            mu_util = np.mean(samples['mu_test'][:, i, j])
+            mu_util = np.mean(samples['u_bar'][:, i, j])
             if mu_util > model_util:
                 model_util = mu_util
                 model_decision = j
@@ -131,7 +127,6 @@ def active_learning(projectpath, seed, criterion, steps):
     training_size = config.train_n
     test_size = config.test_n
     query_size = config.query_n
-    fit_model = choose_fit(config.model)
     problem = config.dataset
     np.random.seed(seed)
     variables = ['x', 'd', 'y']
@@ -149,7 +144,7 @@ def active_learning(projectpath, seed, criterion, steps):
         "acc": [],
         "dent": []
     }
-    samples = fit_model(projectpath, train, query, test)
+    samples = fit_full(projectpath, train, query, test)
     plot_run(samples, test, train, revealed, run_name+'-0', config.plot_run)
     save_data(dat_save, samples, test)
     for iteration in range(steps):
@@ -158,11 +153,12 @@ def active_learning(projectpath, seed, criterion, steps):
                 'query': query,
                 'test': test
         }
-        new_ind = active_learning_func(samples, fit_model, data)
+        new_ind = active_learning_func(samples, data)
         print("Iteration " + str(iteration) + ". Acquire point at index " +
               str(new_ind) + ": x=" + str(query['x'][new_ind]))
         print("train", train['x'].shape)
         print("query", query['x'][new_ind].shape)
+        #samples = fit_update(projectpath, train, query, test, query['x'][new_ind], query['d'][new_ind], query['y'][new_ind], samples)
         for v in variables:
             if type(query[v][new_ind]) is np.ndarray:
                 train[v] = np.append(train[v], np.atleast_2d(query[v][new_ind]), axis=0)
@@ -170,9 +166,9 @@ def active_learning(projectpath, seed, criterion, steps):
                 train[v] = np.append(train[v], query[v][new_ind])
             revealed[v] = np.append(revealed[v], query[v][new_ind])
             query[v] = np.delete(query[v], new_ind, axis=0)
+        samples = fit_full(projectpath, train, query, test)
         print("train", train['x'].shape)
         print("query", query['x'].shape)
-        samples = fit_model(projectpath, train, query, test)
         save_data(dat_save, samples, test)
         plot_run(samples, test, train, revealed, run_name+'-'+str(iteration), config.plot_run)
     print(dat_save)
