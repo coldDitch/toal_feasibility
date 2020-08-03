@@ -26,7 +26,7 @@ import config
 
 def to_two_dim(x):
     if len(x) == 0:
-        return np.empty((0, 82)) # TODO
+        return np.empty((0, 1)) # TODO
     tx = np.atleast_2d(x)
     tx = tx.reshape(len(x), -1)
     return tx
@@ -88,8 +88,10 @@ def fit_update(projectpath, train, query, test, x_star, d_star, y_star, samples)
         'y': test['y'][:,d_star-1]
     }
     samples_sub = format_to_model(projectpath, config.model, train_sub, query, test_sub)
-    samples['u_bar'][:, :, d_star-1] = samples_sub['u_bar']
-    return samples
+    new_samples = {}
+    new_samples['u_bar'] = np.copy(samples['u_bar'])
+    new_samples['u_bar'][:, :, d_star-1] = samples_sub['u_bar']
+    return new_samples
 
 
 

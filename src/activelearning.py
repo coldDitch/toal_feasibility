@@ -43,7 +43,16 @@ def toal(samples, data, objective_utility, entropy_fun):
             # create new training set for the model
             # fit model again
             samples_new = fit_update(data['projectpath'], data['train'], data['query'], data['test'], data['query']['x'][i], data['query']['d'][i], y_star, samples)
-            H = entropy_fun(samples_new, objective_utility)
+            ### Expected utility debug
+            #
+            #revealed = {
+            #    'x': np.array([data['query']['x'][i]]),
+            #    'd': np.array([data['query']['d'][i]]),
+            #    'y': np.array([y_star])
+            #}
+            #plot_run(samples_new, data['test'], data['train'], revealed, 'toal_imputation', config.plot_run)
+            ###
+            H = entropy_fun(samples_new)
             expected_entropy += H * weights[ii] * 1/np.sqrt(np.pi)
         return expected_entropy
 
@@ -54,16 +63,21 @@ def toal(samples, data, objective_utility, entropy_fun):
     if config.plot_run:
         print("MINIMUM")
         print(x_star)
-        plt.plot(data['query']['x'], expected_utils)
+        print("ENT")
+        print(expected_utils[i_star])
+        for d in range(1, config.decision_n+1):
+            color = np.random.rand(3,)
+            plt.scatter(data['query']['x'][data['query']['d']==d], np.array(expected_utils)[data['query']['d']==d],color=color, label='d'+str(d-1))
+        plt.legend()
         plt.title('h(' + objective_utility+')')
-        plt.xlabel('queries')
-        plt.ylabel('entropy of expected utility')
-        plt.plot(data['query']['x'], expected_utils)
+        plt.xlabel('query points')
+        plt.ylabel('expected entropy of decisions')
+        plt.savefig('./plots/entropies.png')
         plt.show()
         plt.clf()
     return i_star
 
-def entropy_of_maximizer_decision(sampledata, name):
+def entropy_of_maximizer_decision(sampledata):
     decisions = config.decision_n
     samples = sampledata["u_bar"]
     entropies = []
@@ -71,7 +85,7 @@ def entropy_of_maximizer_decision(sampledata, name):
     for i in range(num_data):
         entropy = 0
         for decision in range(decisions):
-            maximizers = np.ones(samples.shape[0], dtype=bool)
+            maximizers = np.empty(samples.shape[0], dtype=bool)
             for d in range(decisions):
                 maximizers = np.logical_and((samples[:, i, d] <= samples[:, i, decision]), maximizers)
             prob = np.sum(maximizers) / len(maximizers)
@@ -118,7 +132,7 @@ def save_data(dat_save, samples, test):
     print("SAVING")
     #dat_save["logl"].append(np.mean(np.exp(samples['logl'])))
     dat_save["acc"].append(decision_acc(samples, test))
-    dat_save["dent"].append(entropy_of_maximizer_decision(samples, test))
+    dat_save["dent"].append(entropy_of_maximizer_decision(samples))
 
 
 def active_learning(projectpath, seed, criterion, steps):
@@ -170,7 +184,7 @@ def active_learning(projectpath, seed, criterion, steps):
         print("train", train['x'].shape)
         print("query", query['x'].shape)
         save_data(dat_save, samples, test)
-        plot_run(samples, test, train, revealed, run_name+'-'+str(iteration), config.plot_run)
+        plot_run(samples, test, train, revealed, run_name+'-'+str(iteration+1), config.plot_run)
     print(dat_save)
     print(train['d'])
     dat_save['querydvals'] = revealed['d']

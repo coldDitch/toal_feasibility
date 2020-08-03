@@ -216,7 +216,7 @@ def plot_run(samples, test, train, revealed, run_name, plot):
         np.random.seed(1234)
         for decision in range(decisions):
             res = np.empty((3, test['x'].shape[0]))
-            mu = samples["mu_test"][:,:,decision]
+            mu = samples["u_bar"][:,:,decision]
             plot_dat = {
                 'x': test['x'][:,cov],
                 'mu': mu.T

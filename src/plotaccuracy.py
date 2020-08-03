@@ -12,18 +12,18 @@ matplotlib.use('tkagg')
 font = {'size': 10}
 matplotlib.rc('font', **font)
 path = './res/'
-task = 'acic'
-train_data = 100
+task = 'synthetic'
+train_data = 40
 test_data = 20
 paths = []
 colors = ['b', 'r', 'y', 'g', 'c']
-queries = 1
+queries = 2
 methods = ['random', 'uncer_y', 'decision_ig']
 paths_y = ['-' + name + '-' + str(train_data) + '-' + str(test_data) + '-' +
            str(queries) for name in methods]
 models = ['RANDOM', 'UNCER', 'DECISION IG']
 y_args = ['acc']
-names = ["ACCURACY"]
+names = ["ENTROPY"]
 plot_args = y_args
 paths.extend(paths_y)
 args = len(plot_args)
@@ -40,7 +40,7 @@ for i in range(len(paths)):
             x = pickle.load(f)
         print("x_query")
         print(x["queryxvals"])
-        metric.append(np.array(x['dent']))
+        metric.append(np.array(x['acc']))
     metric = np.array(metric)
     t = np.arange(metric.shape[1])
     res = mean_conf(metric)
@@ -48,7 +48,7 @@ for i in range(len(paths)):
 plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1),
           fancybox=True, shadow=True, ncol=3)
 plt.xlabel('QUERIES')
-plt.ylabel('DECISION ACCURACY')
+plt.ylabel('ACCURACY')
 #plt.tight_layout()
 plt.savefig('./plots/accplot', bbox_inches = "tight")
 plt.show()
