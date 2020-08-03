@@ -49,12 +49,12 @@ def toal(samples, data, objective_utility, entropy_fun):
 
     # evaluate all possible query points
     expected_utils = [f(x) for x in data['query']['x']]
-    plt.plot(data['query']['x'], expected_utils)
     i_star = np.argmin(expected_utils)
     x_star = data['query']['x'][i_star]
     if config.plot_run:
         print("MINIMUM")
         print(x_star)
+        plt.plot(data['query']['x'], expected_utils)
         plt.title('h(' + objective_utility+')')
         plt.xlabel('queries')
         plt.ylabel('entropy of expected utility')

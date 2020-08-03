@@ -80,7 +80,7 @@ def fit_full(projectpath, train, query, test):
 
 def fit_update(projectpath, train, query, test, x_star, d_star, y_star, samples):
     train_sub = {
-        'x': np.append(train['x'][d_star==train['d']], np.atleast_2d(x_star), axis=0),
+        'x': np.append(to_two_dim(train['x'][d_star==train['d']]), np.atleast_2d(x_star), axis=0),
         'y': np.append(train['y'][d_star==train['d']], y_star)
     }
     test_sub = {
