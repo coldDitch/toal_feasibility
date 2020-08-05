@@ -31,7 +31,7 @@ def toal(samples, data, objective_utility, entropy_fun):
         expected_entropy = 0
         # Gauss-Hermite quadrature to compute the integral
         points, weights = np.polynomial.hermite.hermgauss(
-            10)  # should be atleast 32
+            32)  # should be atleast 32
         print("QUERY COV")
         print(data["query"]['x'][i])
         if config.plot_run:
