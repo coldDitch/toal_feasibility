@@ -58,41 +58,6 @@ functions {
     return res;
   }
 
-  int count_decisions(vector d_vec, int d, int n) {
-    int count = 0;
-    for (i in 1:n) {
-      if (d_vec[i]==d) {
-        count += 1;
-      }
-    }
-    return count;
-  }
-
-  matrix sub_covariate_matrix(matrix x, vector d_vec, int d, int n, int k) {
-    int sub_dec = count_decisions(d_vec, d, n);
-    matrix[sub_dec, k] x_sub;
-    int ind = 1;
-    for (i in 1:n) {
-      if (d_vec[i] == d) {
-        x_sub[ind] = x[i];
-        ind += 1;
-      }
-    }
-    return x_sub;
-  }
-
-  vector sub_outcome_vector(vector y, vector d_vec, int d, int n) {
-    int sub_dec = count_decisions(d_vec, d, n);
-    vector[sub_dec] y_sub;
-    int ind = 1;
-    for (i in 1:n) {
-      if (d_vec[i] == d) {
-        y_sub[ind] = y[i];
-        ind += 1;
-      }
-    }
-    return y_sub;
-  }
 }
 
 data {
@@ -122,9 +87,9 @@ model {
   matrix[n, n] L_K;
   matrix[n, n] K;
   // priors
-  rho ~ inv_gamma(1, 1);
-  sq_alpha ~ normal(0, 50);
-  sigma ~ inv_gamma(1, 1);
+  rho ~ inv_gamma(5, 5);
+  sq_alpha ~ normal(0, 10000);
+  sigma ~ inv_gamma(1.1, 10);
 
   // likelihood computation
   K = cov_exp_quad_multidim(sq_alpha, rho, x, n);
@@ -144,7 +109,8 @@ generated quantities {
   u_bar = gp_combine_rng(xtest, y, x, sq_alpha, rho, sigma, delta);
   // not sure if correct
   logl = normal_lpdf(ytest|u_bar,sigma);
-
-  mu = gp_combine_rng(cx, y, x, sq_alpha, rho, sigma, delta);
-  py = normal_rng(mu, sigma);
+  if (cn > 0) {
+    mu = gp_combine_rng(cx, y, x, sq_alpha, rho, sigma, delta);
+    py = normal_rng(mu, sigma);
+  }
 }

@@ -26,13 +26,12 @@ def decision_ig(samples, data):
     return toal(samples, data, 'decision_ig', entropy_of_maximizer_decision)
 
 def toal(samples, data, objective_utility, entropy_fun):
-    herm = 30
     def f(x):
         i = np.where(np.isclose(data['query']['x'], x).reshape(-1))[0][0]
         expected_entropy = 0
         # Gauss-Hermite quadrature to compute the integral
         points, weights = np.polynomial.hermite.hermgauss(
-            herm)  # should be atleast 32
+            10)  # should be atleast 32
         print("QUERY COV")
         print(data["query"]['x'][i])
         if config.plot_run:
@@ -170,7 +169,7 @@ def active_learning(projectpath, seed, criterion, steps):
         "dent": []
     }
     samples = fit_full(projectpath, train, query, test)
-    #plot_run(samples, test, train, revealed, run_name+'-0', config.plot_run)
+    plot_run(samples, test, train, revealed, run_name+'-0', config.plot_run)
     save_data(dat_save, samples, test)
     for iteration in range(steps):
         data = {'projectpath': projectpath,

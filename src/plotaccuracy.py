@@ -13,7 +13,7 @@ font = {'size': 10}
 matplotlib.rc('font', **font)
 path = './res/'
 task = 'synthetic'
-train_data = 100
+train_data = 40
 test_data = 100
 paths = []
 colors = ['b', 'r', 'y', 'g', 'c']
@@ -40,7 +40,7 @@ for i in range(len(paths)):
             x = pickle.load(f)
         print("x_query")
         print(x["queryxvals"])
-        metric.append(np.array(x['dent']))
+        metric.append(np.array(x['acc']))
     metric = np.array(metric)
     t = np.arange(metric.shape[1])
     res = mean_conf(metric)

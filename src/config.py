@@ -1,7 +1,7 @@
-dataset = 'acic'
-model = 'linear'
-train_n = 5
-test_n = 3
+dataset = 'synthetic'
+model = 'gp'
+train_n = 100
+test_n = 100
 decision_n = 2
 query_n = 2
 acic_path = '../../datasets/data_cf_all/'

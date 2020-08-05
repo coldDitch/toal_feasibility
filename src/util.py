@@ -122,7 +122,7 @@ def generate_params(seed):
 
 def generate_multidecision_dataset(problem, training_size, test_size, query_size, decision_n, seed):
     num_queries = query_size
-    std = 1
+    std = 10
     # query set from which model chooses x and d, for which we reveal y
     query_x = covariate_dist(num_queries)
     query_d = np.random.randint(1, decision_n+1, num_queries)
