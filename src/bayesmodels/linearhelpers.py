@@ -22,11 +22,12 @@ sys.path.insert(1, '../')
 import stan_utility
 import config
 
-### TODO actually no need to have two functions
-
 def to_two_dim(x):
     if len(x) == 0:
-        return np.empty((0, 1)) # TODO
+        if config.dataset == 'acic': #TODO the must be a better way to do this
+            return np.empty((0, 82))
+        else:
+            return np.empty((0, 1))
     tx = np.atleast_2d(x)
     tx = tx.reshape(len(x), -1)
     return tx

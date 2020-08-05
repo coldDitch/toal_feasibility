@@ -13,11 +13,11 @@ font = {'size': 10}
 matplotlib.rc('font', **font)
 path = './res/'
 task = 'synthetic'
-train_data = 40
-test_data = 20
+train_data = 100
+test_data = 100
 paths = []
 colors = ['b', 'r', 'y', 'g', 'c']
-queries = 2
+queries = 5
 methods = ['random', 'uncer_y', 'decision_ig']
 paths_y = ['-' + name + '-' + str(train_data) + '-' + str(test_data) + '-' +
            str(queries) for name in methods]
@@ -40,7 +40,7 @@ for i in range(len(paths)):
             x = pickle.load(f)
         print("x_query")
         print(x["queryxvals"])
-        metric.append(np.array(x['acc']))
+        metric.append(np.array(x['dent']))
     metric = np.array(metric)
     t = np.arange(metric.shape[1])
     res = mean_conf(metric)
@@ -50,5 +50,5 @@ plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1),
 plt.xlabel('QUERIES')
 plt.ylabel('ACCURACY')
 #plt.tight_layout()
-plt.savefig('./plots/accplot', bbox_inches = "tight")
+plt.savefig('./plots/entropy', bbox_inches = "tight")
 plt.show()

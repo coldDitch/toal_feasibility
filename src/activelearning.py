@@ -26,15 +26,18 @@ def decision_ig(samples, data):
     return toal(samples, data, 'decision_ig', entropy_of_maximizer_decision)
 
 def toal(samples, data, objective_utility, entropy_fun):
-
+    herm = 30
     def f(x):
         i = np.where(np.isclose(data['query']['x'], x).reshape(-1))[0][0]
         expected_entropy = 0
         # Gauss-Hermite quadrature to compute the integral
         points, weights = np.polynomial.hermite.hermgauss(
-            32)  # should be atleast 32
+            herm)  # should be atleast 32
         print("QUERY COV")
         print(data["query"]['x'][i])
+        if config.plot_run:
+            y_stars = []
+            entropies = []
         for ii, yy in enumerate(points):
             # predicted mean and standard deviation of point x
             mu_x, sd_x = np.mean(samples['py'][i]), np.std(samples['py'][i])
@@ -54,9 +57,17 @@ def toal(samples, data, objective_utility, entropy_fun):
             ###
             H = entropy_fun(samples_new)
             expected_entropy += H * weights[ii] * 1/np.sqrt(np.pi)
+            if config.plot_run:
+                entropies.append(H)
+                y_stars.append(y_star)
+        if config.plot_run:
+            plt.plot(y_stars, entropies)
+            plt.xlabel('y_star')
+            plt.ylabel('H(D_best)')
+            plt.savefig('./plots/expectation.png')
+            plt.show()
         return expected_entropy
 
-    # evaluate all possible query points
     expected_utils = [f(x) for x in data['query']['x']]
     i_star = np.argmin(expected_utils)
     x_star = data['query']['x'][i_star]
@@ -67,7 +78,7 @@ def toal(samples, data, objective_utility, entropy_fun):
         print(expected_utils[i_star])
         for d in range(1, config.decision_n+1):
             color = np.random.rand(3,)
-            plt.scatter(data['query']['x'][data['query']['d']==d], np.array(expected_utils)[data['query']['d']==d],color=color, label='d'+str(d-1))
+            plt.scatter(data['query']['x'][data['query']['d']==d], np.array(expected_utils)[data['query']['d']==d],color=color, label='d='+str(d-1))
         plt.legend()
         plt.title('h(' + objective_utility+')')
         plt.xlabel('query points')
@@ -85,7 +96,7 @@ def entropy_of_maximizer_decision(sampledata):
     for i in range(num_data):
         entropy = 0
         for decision in range(decisions):
-            maximizers = np.empty(samples.shape[0], dtype=bool)
+            maximizers = np.ones(samples.shape[0], dtype=bool)
             for d in range(decisions):
                 maximizers = np.logical_and((samples[:, i, d] <= samples[:, i, decision]), maximizers)
             prob = np.sum(maximizers) / len(maximizers)
@@ -159,7 +170,7 @@ def active_learning(projectpath, seed, criterion, steps):
         "dent": []
     }
     samples = fit_full(projectpath, train, query, test)
-    plot_run(samples, test, train, revealed, run_name+'-0', config.plot_run)
+    #plot_run(samples, test, train, revealed, run_name+'-0', config.plot_run)
     save_data(dat_save, samples, test)
     for iteration in range(steps):
         data = {'projectpath': projectpath,
@@ -172,7 +183,6 @@ def active_learning(projectpath, seed, criterion, steps):
               str(new_ind) + ": x=" + str(query['x'][new_ind]))
         print("train", train['x'].shape)
         print("query", query['x'][new_ind].shape)
-        #samples = fit_update(projectpath, train, query, test, query['x'][new_ind], query['d'][new_ind], query['y'][new_ind], samples)
         for v in variables:
             if type(query[v][new_ind]) is np.ndarray:
                 train[v] = np.append(train[v], np.atleast_2d(query[v][new_ind]), axis=0)
@@ -199,8 +209,6 @@ def main():
     seed = int(sys.argv[2])
     criterion = sys.argv[3]
     active_learning_steps = int(sys.argv[4])
-    #active_learning_func = choose_criterion(criterion)
-    #fit_model = choose_fit(problem)
     active_learning(projectpath, seed, criterion, active_learning_steps)
 
 

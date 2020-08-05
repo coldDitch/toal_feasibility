@@ -227,12 +227,11 @@ def plot_run(samples, test, train, revealed, run_name, plot):
             res[2] = res[0]-np.std(plot_dat['mu'].T, axis=0)
             color = np.random.rand(3,)
             shadedplot(plot_dat['x'], res, color=color, label='prediction d='+str(decision))
-            if revealed['x'].shape[0] > 0:
+            if revealed['x'].shape[0] > 0: # TODO fix for multicovariate models
                 revealed['x'] = revealed['x'].reshape(revealed['x'].shape[0], -1)
                 rev_ind = [revealed['d']==decision+1]
                 plt.scatter(revealed['x'][:,cov][rev_ind], revealed['y'][rev_ind], color=color, label='query d='+str(decision))
             else:
-                #plt.scatter(test['x'], test['y'][:,decision])
                 plt.scatter(marg_dat['x'][decision+1==marg_dat['d']], marg_dat['y'][decision+1==marg_dat['d']], color=color)
         plt.legend()
         plt.savefig('./plots/'+run_name+'.png')
