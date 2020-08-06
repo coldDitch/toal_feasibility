@@ -114,31 +114,33 @@ def generate_acic_dataset(p, training_size, test_size, query_size, decision_n, s
     return train, query, test, revealed
 
 
-def generate_params(seed):
+def generate_params(seed, dimensions):
     np.random.seed(seed)
-    coef_1 = np.random.uniform(-20, 20)
+    coef_1 = np.random.uniform(-20, 20, size=(dimensions,1))
     coef_2 = np.random.uniform(-20, 20)
     return coef_1, coef_2 
 
 def generate_multidecision_dataset(problem, training_size, test_size, query_size, decision_n, seed):
     num_queries = query_size
     std = 10
+    dimensions = 82
     # query set from which model chooses x and d, for which we reveal y
-    query_x = covariate_dist(num_queries)
+    query_x = covariate_dist(num_queries, dimensions)
     query_d = np.random.randint(1, decision_n+1, num_queries)
     query_y = np.zeros(num_queries)
     # initial data for training 
-    train_x = covariate_dist(training_size)
+    train_x = covariate_dist(training_size, dimensions)
     train_d = np.random.randint(1, decision_n+1, training_size)
     train_y = np.zeros(training_size)
     # test set, for test set outcome for all decisions are known to find the best decision
-    test_x = covariate_dist(test_size)
+    test_x = covariate_dist(test_size, dimensions)
     test_y = np.zeros((test_size, decision_n))
     for i in range(1, decision_n + 1):
-        slope, intercept = generate_params(seed+i)
-        query_y[query_d==i] = slope * query_x[query_d==i] + intercept + np.random.normal(0, std, len(query_x[query_d==i]))
-        train_y[train_d==i] = slope * train_x[train_d==i] + intercept + np.random.normal(0, std, len(train_x[train_d==i]))
-        test_y[:,i-1] = slope * test_x + intercept
+        slope, intercept = generate_params(seed+i, dimensions)
+        print(np.dot(query_x[query_d==i, :], slope))
+        query_y[query_d==i] = np.dot(query_x[query_d==i, :], slope).ravel() + intercept + np.random.normal(0, std, len(query_x[query_d==i, :]))
+        train_y[train_d==i] = np.dot(train_x[train_d==i, :], slope).ravel() + intercept + np.random.normal(0, std, len(train_x[train_d==i, :]))
+        test_y[:,i-1] = np.dot(test_x, slope).ravel() + intercept
     
     train_y, mean, std = normalize(train_y)
     test_y = (test_y - mean) / std
@@ -162,19 +164,12 @@ def generate_multidecision_dataset(problem, training_size, test_size, query_size
         'd': np.empty(0),
         'y': np.empty(0)
     }
-    sort_by_covariates(test)
-    sort_by_covariates(query)
-    sort_by_covariates(test)
     return train, query, test, revealed
 
 
-def sort_by_covariates(dat):
-    sort_index = np.argsort(dat['x'])
-    for d in dat.keys():
-        dat[d] = dat[d][sort_index]
 
-def covariate_dist(N):
-    return np.random.random(N) - 0.5
+def covariate_dist(N, dimensions):
+    return np.random.random((N, dimensions)) - 0.5
 
 def choose_fit(problem):
     if problem == 'linear':

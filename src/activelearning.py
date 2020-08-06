@@ -169,7 +169,7 @@ def active_learning(projectpath, seed, criterion, steps):
         "dent": []
     }
     samples = fit_full(projectpath, train, query, test)
-    plot_run(samples, test, train, revealed, run_name+'-0', config.plot_run)
+    #plot_run(samples, test, train, revealed, run_name+'-0', config.plot_run)
     save_data(dat_save, samples, test)
     for iteration in range(steps):
         data = {'projectpath': projectpath,

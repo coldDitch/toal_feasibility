@@ -89,7 +89,7 @@ model {
   // priors
   rho ~ inv_gamma(5, 5);
   sq_alpha ~ normal(0, 10000);
-  sigma ~ inv_gamma(1.1, 10);
+  sigma ~ inv_gamma(2, 1);
 
   // likelihood computation
   K = cov_exp_quad_multidim(sq_alpha, rho, x, n);

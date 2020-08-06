@@ -74,6 +74,8 @@ def fit_full(projectpath, train, query, test):
             'y': test['y'][:,d-1]
         }
         samples = format_to_model(projectpath, config.model, train_sub, query_sub, test_sub)
+        print("BETAS")
+        print(np.mean(samples['beta'], axis=0))
         sample_col['u_bar'][:,:,d-1] = samples['u_bar']
         if np.any(d==query['d']):
             sample_col['py'][:,d==query['d']] = samples['py']

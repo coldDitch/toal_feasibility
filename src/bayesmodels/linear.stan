@@ -16,9 +16,9 @@ parameters {
     real<lower=1e-3> sigmay;
 }
 model {
-    sigmay ~ normal(0, 1);
+    sigmay ~ inv_gamma(2, 1);
     to_vector(beta) ~ normal(0, 10);
-    alpha ~ normal(0, 10);
+    alpha ~ normal(0, 1);
     y ~ normal(x * beta + alpha, sigmay);
 }
 generated quantities {
