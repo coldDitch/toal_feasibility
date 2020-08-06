@@ -138,7 +138,11 @@ def generate_multidecision_dataset(problem, training_size, test_size, query_size
         slope, intercept = generate_params(seed+i)
         query_y[query_d==i] = slope * query_x[query_d==i] + intercept + np.random.normal(0, std, len(query_x[query_d==i]))
         train_y[train_d==i] = slope * train_x[train_d==i] + intercept + np.random.normal(0, std, len(train_x[train_d==i]))
-        test_y[:,i-1] = slope * test_x + intercept + np.random.normal(0, std, test_size)
+        test_y[:,i-1] = slope * test_x + intercept
+    
+    train_y, mean, std = normalize(train_y)
+    test_y = (test_y - mean) / std
+    query_y = (query_y - mean) / std
     train = {
         'x': train_x,
         'y': train_y,
@@ -170,7 +174,7 @@ def sort_by_covariates(dat):
         dat[d] = dat[d][sort_index]
 
 def covariate_dist(N):
-    return np.random.random(N)*9 - 4.5
+    return np.random.random(N) - 0.5
 
 def choose_fit(problem):
     if problem == 'linear':
