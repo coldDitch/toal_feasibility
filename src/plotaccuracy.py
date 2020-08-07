@@ -12,8 +12,8 @@ matplotlib.use('tkagg')
 font = {'size': 10}
 matplotlib.rc('font', **font)
 path = './res/'
-task = 'acic'
-train_data = 100
+task = 'synthetic'
+train_data = 20
 test_data = 100
 paths = []
 colors = ['b', 'r', 'y', 'g', 'c']

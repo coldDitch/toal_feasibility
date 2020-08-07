@@ -26,17 +26,17 @@ def decision_ig(samples, data):
     return toal(samples, data, 'decision_ig', entropy_of_maximizer_decision)
 
 def toal(samples, data, objective_utility, entropy_fun):
-    def f(x):
-        i = np.where(np.isclose(data['query']['x'], x).reshape(-1))[0][0]
-        expected_entropy = 0
+    def f(i):
+        print("ITER")
+        print(i)
+        print(data['query']['x'][i].shape)
         # Gauss-Hermite quadrature to compute the integral
         points, weights = np.polynomial.hermite.hermgauss(
             32)  # should be atleast 32
-        print("QUERY COV")
-        print(data["query"]['x'][i])
         if config.plot_run:
             y_stars = []
             entropies = []
+        expected_entropy = 0
         for ii, yy in enumerate(points):
             # predicted mean and standard deviation of point x
             mu_x, sd_x = np.mean(samples['py'][i]), np.std(samples['py'][i])
@@ -67,7 +67,7 @@ def toal(samples, data, objective_utility, entropy_fun):
             plt.show()
         return expected_entropy
 
-    expected_utils = [f(x) for x in data['query']['x']]
+    expected_utils = [f(i) for i in range(data['query']['x'].shape[0])]
     i_star = np.argmin(expected_utils)
     x_star = data['query']['x'][i_star]
     if config.plot_run:
