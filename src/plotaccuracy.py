@@ -12,9 +12,9 @@ matplotlib.use('tkagg')
 font = {'size': 10}
 matplotlib.rc('font', **font)
 path = './res/'
-task = 'synthetic'
-train_data = 20
-test_data = 100
+task = 'acic'
+train_data = 10
+test_data = 1
 paths = []
 colors = ['b', 'r', 'y', 'g', 'c']
 queries = 1
@@ -38,8 +38,6 @@ for i in range(len(paths)):
     for fi in files:
         with open(fi, 'rb') as f:
             x = pickle.load(f)
-        print("x_query")
-        print(x["queryxvals"])
         metric.append(np.array(x['dent']))
     metric = np.array(metric)
     t = np.arange(metric.shape[1])
@@ -47,8 +45,8 @@ for i in range(len(paths)):
     shadedplot(t, res, label=models[i], color=colors[i])
 plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1),
           fancybox=True, shadow=True, ncol=3)
-plt.xlabel('QUERIES')
-plt.ylabel('ACCURACY')
+plt.xlabel('QUERY')
+plt.ylabel('ENTROPY')
 #plt.tight_layout()
 plt.savefig('./plots/entropy', bbox_inches = "tight")
 plt.show()

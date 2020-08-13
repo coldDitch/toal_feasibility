@@ -4,6 +4,7 @@ import config
 import pickle
 import numpy as np
 import random
+from sklearn.neighbors import KernelDensity
 from util import choose_fit, generate_multidecision_dataset, shadedplot, plot_run, generate_dataset
 from bayesmodels.linearhelpers import fit_full, fit_update
 import matplotlib
@@ -24,6 +25,44 @@ def uncertainty_sampling_y(samples, data):
 def decision_ig(samples, data):
     #acquisition which minimizes entropy of 
     return toal(samples, data, 'decision_ig', entropy_of_maximizer_decision)
+
+def eig(samples, data):
+    return toal(samples, data, 'eig', estimate_entropy_1D)
+
+
+def estimate_bandwidth(samples):
+    # approximation for minimizing integrated mse
+    return np.min((np.std(samples), (np.quantile(samples, 0.75)-np.quantile(samples, 0.25))/1.34)) * 0.9 * np.power(len(samples), -0.2)
+
+
+def estimate_entropy_1D(sampledata):
+    # estimates entropy of dataset where dimension 1 are samples from the distribution and
+    # dimension 2 for different samples
+    samples = sampledata['u_bar']
+    ntarget = samples.shape[1]
+    entropy = 0
+    for i in range(ntarget):
+        for d in range(config.decision_n):
+            # approximate bandwidth for minimizing the mean integrated squared error
+            bandwidth = estimate_bandwidth(samples[:, i, d])
+            # kernel density estimation and then Monte Carlo estimate of entropy
+            kde = KernelDensity(kernel='gaussian', bandwidth=bandwidth).fit(
+                samples[:, i].reshape(-1, 1))
+            y = kde.sample(500)
+            entropy -= np.mean(kde.score_samples(y))
+            # plot kde for debugging
+            if config.plot_run:
+                X_plot = np.linspace(np.min(samples[:, i, d]), np.max(
+                    samples[:, i, d]), 1000)[:, np.newaxis]
+                log_dens = kde.score_samples(X_plot)
+                plt.plot(X_plot[:, 0], np.exp(log_dens), '-',
+                        label="Gaussian kernel")
+                plt.legend(loc='upper left')
+                plt.plot(samples[:, i, d], -0.005 - 0.01 *
+                        np.random.random(samples.shape[0]), '+k')
+                plt.show()
+    return(np.mean(entropy))
+
 
 def toal(samples, data, objective_utility, entropy_fun):
     def f(i):
@@ -113,6 +152,8 @@ def choose_criterion(criterion):
         return uncertainty_sampling_y
     elif criterion == "decision_ig":
         return decision_ig
+    elif criterion == "eig":
+        return eig
     else:
         print("Activelearning not specified correctly")
         return
@@ -169,7 +210,7 @@ def active_learning(projectpath, seed, criterion, steps):
         "dent": []
     }
     samples = fit_full(projectpath, train, query, test)
-    #plot_run(samples, test, train, revealed, run_name+'-0', config.plot_run)
+    plot_run(samples, test, train, revealed, run_name+'-0', config.plot_run)
     save_data(dat_save, samples, test)
     for iteration in range(steps):
         data = {'projectpath': projectpath,

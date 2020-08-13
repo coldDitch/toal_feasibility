@@ -56,7 +56,7 @@ def acic_covariates():
 
 def acic_labels(fil):
     df = pd.read_csv(config.acic_path + fil)
-    potential_outcomes = df[['mu0', 'mu1']].values
+    potential_outcomes = df[['y0', 'y1']].values
     treatments = df['z'].values
     #treatments = np.random.randint(1, size=potential_outcomes.shape[0]) 
     outcomes = np.array([potential_outcomes[i, treatments[i]] for i in range(len(treatments))])
@@ -123,7 +123,7 @@ def generate_params(seed, dimensions):
 def generate_multidecision_dataset(problem, training_size, test_size, query_size, decision_n, seed):
     num_queries = query_size
     std = 10
-    dimensions = 82
+    dimensions = 1
     # query set from which model chooses x and d, for which we reveal y
     query_x = covariate_dist(num_queries, dimensions)
     query_d = np.random.randint(1, decision_n+1, num_queries)
@@ -196,6 +196,12 @@ def shadedplot(x, y, fill=True, label='', color='b'):
     c = p[-1].get_color()
     if fill:
         plt.fill_between(x, y[1, :], y[2, :], color=c, alpha=0.25)
+
+
+def sort_by_covariates(dat):
+    sort_index = np.argsort(dat['x'])
+    for d in dat.keys():
+        dat[d] = dat[d][sort_index]
 
 
 def plot_run(samples, test, train, revealed, run_name, plot):
