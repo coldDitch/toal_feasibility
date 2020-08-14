@@ -1,7 +1,8 @@
 dataset = 'synthetic'
+synthetic_dim = 1
 model = 'se_gp'
-train_n = 20
-test_n = 1
+train_n = 5
+test_n = 100
 decision_n = 2
 query_n = 2
 acic_path = '../../datasets/data_cf_all/'

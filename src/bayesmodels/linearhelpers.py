@@ -27,7 +27,7 @@ def to_two_dim(x):
         if config.dataset == 'acic': #TODO the must be a better way to do this
             return np.empty((0, 82))
         else:
-            return np.empty((0, 1))
+            return np.empty((0, config.synthetic_dim))
     tx = np.atleast_2d(x)
     tx = tx.reshape(len(x), -1)
     return tx

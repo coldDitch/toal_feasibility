@@ -12,16 +12,16 @@ matplotlib.use('tkagg')
 font = {'size': 10}
 matplotlib.rc('font', **font)
 path = './res/'
-task = 'acic'
-train_data = 10
+task = 'synthetic'
+train_data = 20
 test_data = 1
 paths = []
 colors = ['b', 'r', 'y', 'g', 'c']
 queries = 1
-methods = ['random', 'uncer_y', 'decision_ig']
+methods = ['random', 'uncer_y', 'decision_ig', 'eig']
 paths_y = ['-' + name + '-' + str(train_data) + '-' + str(test_data) + '-' +
            str(queries) for name in methods]
-models = ['RANDOM', 'UNCER', 'DECISION IG']
+models = ['RANDOM', 'UNCER', 'DECISION IG', 'EIG']
 y_args = ['acc']
 names = ["ENTROPY"]
 plot_args = y_args
@@ -38,7 +38,7 @@ for i in range(len(paths)):
     for fi in files:
         with open(fi, 'rb') as f:
             x = pickle.load(f)
-        metric.append(np.array(x['dent']))
+        metric.append(np.array(x['acc']))
     metric = np.array(metric)
     t = np.arange(metric.shape[1])
     res = mean_conf(metric)

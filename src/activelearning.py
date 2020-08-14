@@ -48,12 +48,13 @@ def estimate_entropy_1D(sampledata):
             # kernel density estimation and then Monte Carlo estimate of entropy
             kde = KernelDensity(kernel='gaussian', bandwidth=bandwidth).fit(
                 samples[:, i].reshape(-1, 1))
-            y = kde.sample(500)
+            # number of samples determines the accuracy of estimate of one dimensional entropy
+            y = kde.sample(50)
             entropy -= np.mean(kde.score_samples(y))
             # plot kde for debugging
             if config.plot_run:
                 X_plot = np.linspace(np.min(samples[:, i, d]), np.max(
-                    samples[:, i, d]), 1000)[:, np.newaxis]
+                    samples[:, i, d]), 50)[:, np.newaxis]
                 log_dens = kde.score_samples(X_plot)
                 plt.plot(X_plot[:, 0], np.exp(log_dens), '-',
                         label="Gaussian kernel")
