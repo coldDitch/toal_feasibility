@@ -65,8 +65,8 @@ model {
   matrix[n, n] L_K;
   matrix[n, n] K;
   // priors
-  rho ~ inv_gamma(5, 5);
-  alpha ~ normal(0, 100);
+  rho ~ inv_gamma(2, 20);
+  alpha ~ normal(0, 1);
   sigma ~ inv_gamma(2, 1);
 
   // likelihood computation

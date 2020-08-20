@@ -1,11 +1,11 @@
 dataset = 'synthetic'
-synthetic_dim = 1
+synthetic_dim = 5
 model = 'se_gp'
-train_n = 5
+train_n = 100
 test_n = 100
 decision_n = 2
 query_n = 2
 acic_path = '../../datasets/data_cf_all/'
-acic_files = ['10/zymu_236.csv']
-plot_run = False
+acic_files = ['10/zymu_7692299.csv']
+plot_run = True
 run_diagnostics = False

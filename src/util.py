@@ -56,7 +56,7 @@ def acic_covariates():
 
 def acic_labels(fil):
     df = pd.read_csv(config.acic_path + fil)
-    potential_outcomes = df[['y0', 'y1']].values
+    potential_outcomes = df[['mu0', 'mu1']].values
     treatments = df['z'].values
     #treatments = np.random.randint(1, size=potential_outcomes.shape[0]) 
     outcomes = np.array([potential_outcomes[i, treatments[i]] for i in range(len(treatments))])
@@ -122,8 +122,9 @@ def generate_params(seed, dimensions):
 
 def generate_multidecision_dataset(problem, training_size, test_size, query_size, decision_n, seed):
     num_queries = query_size
-    std = 10
+    std = 1
     dimensions = config.synthetic_dim
+    noisy = True
     # query set from which model chooses x and d, for which we reveal y
     query_x = covariate_dist(num_queries, dimensions)
     query_d = np.random.randint(1, decision_n+1, num_queries)
@@ -135,12 +136,19 @@ def generate_multidecision_dataset(problem, training_size, test_size, query_size
     # test set, for test set outcome for all decisions are known to find the best decision
     test_x = covariate_dist(test_size, dimensions)
     test_y = np.zeros((test_size, decision_n))
-    for i in range(1, decision_n + 1):
-        slope, intercept = generate_params(seed+i, dimensions)
-        print(np.dot(query_x[query_d==i, :], slope))
-        query_y[query_d==i] = np.dot(query_x[query_d==i, :], slope).ravel() + intercept + np.random.normal(0, std, len(query_x[query_d==i, :]))
-        train_y[train_d==i] = np.dot(train_x[train_d==i, :], slope).ravel() + intercept + np.random.normal(0, std, len(train_x[train_d==i, :]))
-        test_y[:,i-1] = np.dot(test_x, slope).ravel() + intercept
+    if noisy:
+        for i in range(1, decision_n + 1):
+            slope, intercept = generate_params(seed+i, 1)
+            query_y[query_d==i] = np.dot(query_x[query_d==i, 0].reshape(-1, 1), slope).ravel() + intercept + np.random.normal(0, std, len(query_x[query_d==i, 0]))
+            train_y[train_d==i] = np.dot(train_x[train_d==i, 0].reshape(-1, 1), slope).ravel() + intercept + np.random.normal(0, std, len(train_x[train_d==i, 0]))
+            test_y[:,i-1] = test_x[:, 0] * slope + intercept
+    else:
+        for i in range(1, decision_n + 1):
+            slope, intercept = generate_params(seed+i, dimensions)
+            print(np.dot(query_x[query_d==i, :], slope))
+            query_y[query_d==i] = np.dot(query_x[query_d==i, :], slope).ravel() + intercept + np.random.normal(0, std, len(query_x[query_d==i, :]))
+            train_y[train_d==i] = np.dot(train_x[train_d==i, :], slope).ravel() + intercept + np.random.normal(0, std, len(train_x[train_d==i, :]))
+            test_y[:,i-1] = np.dot(test_x, slope).ravel() + intercept
     
     train_y, mean, std = normalize(train_y)
     test_y = (test_y - mean) / std
@@ -231,7 +239,7 @@ def plot_run(samples, test, train, revealed, run_name, plot):
             res[1] = res[0]+np.std(plot_dat['mu'].T, axis=0)
             res[2] = res[0]-np.std(plot_dat['mu'].T, axis=0)
             color = np.random.rand(3,)
-            shadedplot(plot_dat['x'], res, color=color, label='prediction d='+str(decision))
+            shadedplot(plot_dat['x'], res, color=color, label='prediction d='+str(decision)+str(cov))
             if revealed['x'].shape[0] > 0: # TODO fix for multicovariate models
                 revealed['x'] = revealed['x'].reshape(revealed['x'].shape[0], -1)
                 rev_ind = [revealed['d']==decision+1]

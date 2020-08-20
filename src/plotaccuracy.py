@@ -12,13 +12,13 @@ matplotlib.use('tkagg')
 font = {'size': 10}
 matplotlib.rc('font', **font)
 path = './res/'
-task = 'synthetic'
+task = 'acic'
 train_data = 20
-test_data = 1
+test_data = 10
 paths = []
 colors = ['b', 'r', 'y', 'g', 'c']
-queries = 1
-methods = ['random', 'uncer_y', 'decision_ig', 'eig']
+queries = 2
+methods = ['random', 'uncer_y', 'decision_ig']
 paths_y = ['-' + name + '-' + str(train_data) + '-' + str(test_data) + '-' +
            str(queries) for name in methods]
 models = ['RANDOM', 'UNCER', 'DECISION IG', 'EIG']
@@ -46,7 +46,7 @@ for i in range(len(paths)):
 plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1),
           fancybox=True, shadow=True, ncol=3)
 plt.xlabel('QUERY')
-plt.ylabel('ENTROPY')
+plt.ylabel('ACCURACY')
 #plt.tight_layout()
 plt.savefig('./plots/entropy', bbox_inches = "tight")
 plt.show()

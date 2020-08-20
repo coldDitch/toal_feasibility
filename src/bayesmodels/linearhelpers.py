@@ -52,6 +52,8 @@ def format_to_model(projectpath, bayesname, train,  query, test):
     model = stan_utility.compile_model(
         bayespath, model_name=modelname, model_path=projectpath+'stancodes/')
     fit = model.sampling(data=dat, seed=194838, chains=4, iter=4000)
+    print('lengthscales')
+    print(np.mean(fit.extract(permuted=True)['rho'], axis=0))
     if config.run_diagnostics:
         stan_utility.check_all_diagnostics(fit)
     return fit.extract(permuted=True)
