@@ -1,7 +1,7 @@
 import pickle
 import glob
 import sys
-from util import *
+from plot_utils import *
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
@@ -12,13 +12,14 @@ matplotlib.use('tkagg')
 font = {'size': 10}
 matplotlib.rc('font', **font)
 path = './res/'
-task = 'acic'
-train_data = 20
-test_data = 10
+task = config.dataset
+train_data = config.train_n
+test_data = config.test_n
 paths = []
 colors = ['b', 'r', 'y', 'g', 'c']
-queries = 2
-methods = ['random', 'uncer_y', 'decision_ig']
+queries = config.query_n
+# list all activelearning methods you want to plot
+methods = ['random', 'uncer_y', 'decision_ig']#, 'eig']
 paths_y = ['-' + name + '-' + str(train_data) + '-' + str(test_data) + '-' +
            str(queries) for name in methods]
 models = ['RANDOM', 'UNCER', 'DECISION IG', 'EIG']

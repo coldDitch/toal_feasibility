@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import figure
+from activelearning import estimate_bandwidth
 figure(num=None, figsize=(10, 6), dpi=160, facecolor='w', edgecolor='k')
 
 matplotlib.use('tkagg')

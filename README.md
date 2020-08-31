@@ -13,14 +13,7 @@ or alternatively using virtualenv
 ``` source setup.sh ```
 
 ## Running tests
-- Setting up config file
-	- Choose:
-		- Dataset
-		- Model
-		- Size of the training set
-		- Size of the test set
-		- Number of possible decisions
-		- Number of possible queries
+- Set up config file for the test. For more information check the comments in the config file.
 
 - Running code 
 	- The active learning for the functions can be run by:

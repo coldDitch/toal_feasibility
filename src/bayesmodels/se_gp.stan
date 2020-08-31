@@ -65,7 +65,7 @@ model {
   matrix[n, n] L_K;
   matrix[n, n] K;
   // priors
-  rho ~ inv_gamma(2, 20);
+  rho ~ inv_gamma(2, 5);
   alpha ~ normal(0, 1);
   sigma ~ inv_gamma(2, 1);
 
