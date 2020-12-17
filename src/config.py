@@ -8,21 +8,21 @@ dataset = 'synthetic'
 model = 'linear'
 
 # number of potential decisions (treatments)
-decision_n = 4
+decision_n = 2
 
 # number of training, test and potential querypoints, has to be lower than 4802 for ACIC
-train_n = 20
-test_n = 10
-query_n = 5
-
-# Save plots from runA
-show_plots = True
+train_n = 100
+test_n = 20
+query_n = 10
 
 # Save plots from run
-save_plots = True
+show_plots = False
 
-# Runs full diagnostics for stanmodel, this is 
-run_diagnostics = False
+# Save plots from run
+save_plots = False
+
+# Runs full diagnostics for stanmodel
+run_diagnostics = True
 
 ### ACICC data parameters
 acic_path = '../../datasets/data_cf_all/'
@@ -31,12 +31,12 @@ acic_files = ['10/zymu_236.csv', '10/zymu_7692299.csv', '10/zymu_7692308.csv', '
 
 ###  Synthetic data parameters
 # number of features in synthetic data
-synthetic_dim = 2
+synthetic_dim = 40
 
 # If noisy this means that only the first covariate has effect on the outcome,
 # if not all covariates are correlated with the outcome
-noisy = False
+noisy = True
 
-# Standard deviation added to synthetic data, data is normalized afterwards so 
+# Standard deviation added to synthetic data, data is normalized afterwards so
 # this essentially determines the ration of effect and noise
 std = 1

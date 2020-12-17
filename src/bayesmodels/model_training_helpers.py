@@ -30,7 +30,7 @@ def to_two_dim(x):
     tx = tx.reshape(len(x), -1)
     return tx
 
-def format_to_model(projectpath, bayesname, train,  query, test):
+def format_to_model(projectpath, bayesname, train, query, test):
     folder = "bayesmodels/"
     bayespath = projectpath + folder + bayesname + '.stan'
     x = to_two_dim(train['x'])
@@ -38,10 +38,13 @@ def format_to_model(projectpath, bayesname, train,  query, test):
     xtest = to_two_dim(test['x'])
     dat = {'n': x.shape[0],
            'k': x.shape[1],
+           'nd': config.decision_n,
            'x': x,
+           'd': train['d'],
            'y': train['y'],
            'cn': cx.shape[0],
            'cx': cx,
+           'cd': query['d'],
            'ntest': xtest.shape[0],
            'xtest': xtest,
            'ytest': test['y']
@@ -56,45 +59,17 @@ def format_to_model(projectpath, bayesname, train,  query, test):
         print(np.mean(fit.extract(permuted=True)['rho'], axis=0))
     if config.run_diagnostics:
         stan_utility.check_all_diagnostics(fit)
+        print(fit)
     return fit.extract(permuted=True)
 
 def fit_full(projectpath, train, query, test):
-    """
-    Fits all models seperately
-    """
-    sample_col = {
-        'u_bar': np.empty((8000, test['y'].shape[0], test['y'].shape[1])),
-        'py': np.empty((8000, query['y'].shape[0]))
-    }
-    for d in range(1, config.decision_n+1):
-        train_sub = {
-            'x': train['x'][d == train['d']],
-            'y': train['y'][d == train['d']],
-        }
-        query_sub = {
-            'x': query['x'][d == query['d']],
-        }
-        test_sub = {
-            'x': test['x'],
-            'y': test['y'][:, d-1]
-        }
-        samples = format_to_model(projectpath, config.model, train_sub, query_sub, test_sub)
-        sample_col['u_bar'][:, :, d-1] = samples['u_bar']
-        if np.any(d == query['d']):
-            sample_col['py'][:, d == query['d']] = samples['py']
-    return sample_col
+    return format_to_model(projectpath, config.model, train, query, test)
 
 def fit_update(projectpath, train, query, test, x_star, d_star, y_star, samples):
     train_sub = {
-        'x': np.append(to_two_dim(train['x'][d_star == train['d']]), np.atleast_2d(x_star), axis=0),
-        'y': np.append(train['y'][d_star == train['d']], y_star)
+        'x': np.append(to_two_dim(train['x']), np.atleast_2d(x_star), axis=0),
+        'd': np.append(train['d'], d_star),
+        'y': np.append(train['y'], y_star)
     }
-    test_sub = {
-        'x': test['x'],
-        'y': test['y'][:,d_star-1]
-    }
-    samples_sub = format_to_model(projectpath, config.model, train_sub, query, test_sub)
-    new_samples = {}
-    new_samples['u_bar'] = np.copy(samples['u_bar'])
-    new_samples['u_bar'][:, :, d_star-1] = samples_sub['u_bar']
-    return new_samples
+    samples = format_to_model(projectpath, config.model, train_sub, query, test)
+    return samples

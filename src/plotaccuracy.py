@@ -12,16 +12,17 @@ matplotlib.use('tkagg')
 font = {'size': 10}
 matplotlib.rc('font', **font)
 path = './res/'
-task = config.dataset
+task = config.dataset + '-' + config.model
 train_data = config.train_n
 test_data = config.test_n
+queries = config.query_n
+decisions = config.decision_n
 paths = []
 colors = ['b', 'r', 'y', 'g', 'c']
-queries = config.query_n
 # list all activelearning methods you want to plot
 methods = ['random', 'uncer_y', 'decision_ig']#, 'eig']
 paths_y = ['-' + name + '-' + str(train_data) + '-' + str(test_data) + '-' +
-           str(queries) for name in methods]
+           str(decisions) + '-' + str(queries) for name in methods]
 models = ['RANDOM', 'UNCER', 'DECISION IG', 'EIG']
 y_args = ['acc']
 names = ["ENTROPY"]
@@ -30,6 +31,7 @@ paths.extend(paths_y)
 args = len(plot_args)
 for i in range(len(paths)):
     print(paths[i])
+    print(path + task + paths[i] + '*')
     files = glob.glob(path + task + paths[i] + '*')
     files = sorted(files)
     print("filecount")
