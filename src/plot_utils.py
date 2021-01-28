@@ -5,7 +5,7 @@ from sklearn.neighbors import KernelDensity
 
 def plot_all(samples, test, train, run_name):
     """
-        Plots current model, 
+        Plots current model,
         utility density and probability mass function of D_best at target index
     """
     if config.save_plots or config.show_plots:
@@ -56,7 +56,7 @@ def plot_run(samples, test, train, run_name):
         if config.save_plots:
             plt.savefig('./plots/cov'+str(cov)+'-'+run_name+'.png')
         plt.clf()
-    
+
 def plot_test_point(samples_data, test_point, run_name):
     """
     Plots utility densities at a current testpoint
@@ -134,16 +134,16 @@ def sort_by_covariates(dat):
     for d in dat.keys():
         dat[d] = dat[d][sort_index]
 
-    
+
 def mean_conf(dat):
     """
     mean and it's standard deviation
     """
     N, Nq = dat.shape
     ret = np.empty((3, Nq))
-    ret[0, :] = np.mean(dat, axis=0)
-    ret[1, :] = ret[0, :] - np.std(dat, axis=0)/np.sqrt(N)
-    ret[2, :] = ret[0, :] + np.std(dat, axis=0)/np.sqrt(N)
+    ret[0, :] = np.quantile(dat, 0.5, axis=0)
+    ret[1, :] = np.quantile(dat, 0.25, axis=0)
+    ret[2, :] = np.quantile(dat, 0.75, axis=0)
     return ret
 
 

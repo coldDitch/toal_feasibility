@@ -165,7 +165,7 @@ def revealed_data():
 
 def generate_multidecision_dataset(training_size, test_size, query_size, decision_n, seed):
     """
-    Generate synthetic, linear dataset W . X + b = y
+    Generate synthetic dataset
     """
     num_queries = query_size
     std = config.std
@@ -175,41 +175,20 @@ def generate_multidecision_dataset(training_size, test_size, query_size, decisio
     query_x = covariate_dist(num_queries, dimensions)
     query_d = rndm.randint(1, decision_n+1, num_queries)
     query_y = np.zeros(num_queries)
-    # initial data for training 
+    # initial data for training
     train_x = covariate_dist(training_size, dimensions)
     train_d = rndm.randint(1, decision_n+1, training_size)
     train_y = np.zeros(training_size)
     # test set, for test set outcome for all decisions are known to find the best decision
     test_x = covariate_dist(test_size, dimensions)
     test_y = np.zeros((test_size, decision_n))
-    if noisy:
-        # Only the first covariate is correlated with the outcomes
-        for i in range(1, decision_n + 1):
-            slope, intercept = generate_params(seed+i, 1)
-            query_y[query_d == i] = np.dot(query_x[query_d == i, 0].reshape(-1, 1), slope).ravel()
-            query_y[query_d == i] += intercept + rndm.normal(0, std, len(query_x[query_d == i, 0]))
-            train_y[train_d == i] = np.dot(train_x[train_d == i, 0].reshape(-1, 1), slope).ravel()
-            train_y[train_d == i] += intercept + rndm.normal(0, std, len(train_x[train_d == i, 0]))
-            test_y[:,i-1] = test_x[:, 0] * slope + intercept
-    else:
-        # All the covaries are dependent on the outcome
-        for i in range(1, decision_n + 1):
-            slope, intercept = generate_params(seed+i, dimensions)
-            query_y[query_d == i] = np.dot(query_x[query_d == i, :], slope).ravel()
-            query_y[query_d == i] += intercept + rndm.normal(0, std, len(query_x[query_d == i, :]))
-            train_y[train_d == i] = np.dot(train_x[train_d == i, :], slope).ravel()
-            train_y[train_d == i] += intercept + rndm.normal(0, std, len(train_x[train_d == i, :]))
-            test_y[:,i-1] = np.dot(test_x, slope).ravel() + intercept
-    train_y, mean, std = normalize(train_y)
-    test_y = (test_y - mean) / std
-    query_y = (query_y - mean) / std
     train = {
         'x': train_x,
         'y': train_y,
         'd': train_d
         }
     query = {
-        'x': query_x, 
+        'x': query_x,
         'y': query_y,
         'd': query_d
     }
@@ -217,9 +196,73 @@ def generate_multidecision_dataset(training_size, test_size, query_size, decisio
         'x': test_x,
         'y': test_y
     }
+
+    if config.model=='quadratic':
+        print('quadratic gen')
+        quadratic_gen(noisy, query, train, test, decision_n, seed, std)
+    else:
+        linear_gen(noisy, query, train, test, decision_n, seed, std)
+
+
+
+
+    train['y'], mean, std = normalize(train['y'])
+    test['y'] = (test['y'] - mean) / std
+    query['y'] = (query['y'] - mean) / std
     revealed = revealed_data()
     return train, query, test, revealed
 
+def linear_gen(noisy, query, train, test, decision_n, seed, std):
+    """
+    linear dataset W . X + b = y
+    """
+    if noisy:
+        # Only the first covariate is correlated with the outcomes
+        for i in range(1, decision_n + 1):
+            slope, intercept = generate_params(seed+i, 1)
+            query['y'][query['d'] == i] = np.dot(query['x'][query['d'] == i, 0].reshape(-1, 1), slope).ravel()
+            query['y'][query['d'] == i] += intercept + rndm.normal(0, std, len(query['x'][query['d'] == i, 0]))
+            train['y'][train['d'] == i] = np.dot(train['x'][train['d'] == i, 0].reshape(-1, 1), slope).ravel()
+            train['y'][train['d'] == i] += intercept + rndm.normal(0, std, len(train['x'][train['d'] == i, 0]))
+            test['y'][:,i-1] = test['x'][:, 0] * slope + intercept
+    else:
+        # All the covaries are dependent on the outcome
+        for i in range(1, decision_n + 1):
+            slope, intercept = generate_params(seed+i, dimensions)
+            query['y'][query['d'] == i] = np.dot(query['x'][query['d'] == i, :], slope).ravel()
+            query['y'][query['d'] == i] += intercept + rndm.normal(0, std, len(query['x'][query['d'] == i, :]))
+            train['y'][train['d'] == i] = np.dot(train['x'][train['d'] == i, :], slope).ravel()
+            train['y'][train['d'] == i] += intercept + rndm.normal(0, std, len(train['x'][train['d'] == i, :]))
+            test['y'][:, i-1] = np.dot(test['x'], slope).ravel() + intercept
+
+def quadratic_gen(noisy, query, train, test, decision_n, seed, std):
+    """
+    quadratic dataset W_1 . X^2 + W_2 . X + b = y
+    """
+    if noisy:
+        # Only the first covariate is correlated with the outcomes
+        for i in range(1, decision_n + 1):
+            quad_a, _ = generate_params(seed+i, 1)
+            slope, intercept = generate_params(seed+i, 1)
+            query['y'][query['d'] == i] = np.dot(np.power(query['x'][query['d'] == i, 0].reshape(-1, 1), 2), quad_a).ravel()
+            query['y'][query['d'] == i] += np.dot(query['x'][query['d'] == i, 0].reshape(-1, 1), slope).ravel()
+            query['y'][query['d'] == i] += intercept + rndm.normal(0, std, len(query['x'][query['d'] == i, 0]))
+            train['y'][train['d'] == i] = np.dot(np.power(train['x'][train['d'] == i, 0].reshape(-1, 1), 2), quad_a).ravel()
+            train['y'][train['d'] == i] += np.dot(train['x'][train['d'] == i, 0].reshape(-1, 1), slope).ravel()
+            train['y'][train['d'] == i] += intercept + rndm.normal(0, std, len(train['x'][train['d'] == i, 0]))
+            test['y'][:,i-1] = np.power(test['x'][:, 0], 2) * quad_a + test['x'][:, 0] * slope + intercept
+    else:
+        # All the covaries are dependent on the outcome
+        for i in range(1, decision_n + 1):
+            quad_a, _ = generate_params(seed+i, dimensions)
+            slope, intercept = generate_params(seed+i, dimensions)
+            query['y'][query['d'] == i] = np.dot(np.power(query['x'][query['d'] == i, :].reshape(-1, 1), 2), quad_a).ravel()
+            query['y'][query['d'] == i] += np.dot(query['x'][query['d'] == i, :], slope).ravel()
+            query['y'][query['d'] == i] += intercept + rndm.normal(0, std, len(query['x'][query['d'] == i, :]))
+            train['y'][train['d'] == i] = np.dot(np.power(train['x'][train['d'] == i, :].reshape(-1, 1), 2), quad_a).ravel()
+            train['y'][train['d'] == i] += np.dot(train['x'][train['d'] == i, :], slope).ravel()
+            train['y'][train['d'] == i] += intercept + rndm.normal(0, std, len(train['x'][train['d'] == i, :]))
+            test['y'][:, i-1] = np.dot(np.power(test['x'], 2), quad_a) + np.dot(test['x'], slope).ravel() + intercept
 
 def covariate_dist(num_covariates, num_features):
     """

@@ -52,14 +52,14 @@ def format_to_model(projectpath, bayesname, train, query, test):
     modelname = bayesname
     model = stan_utility.compile_model(
         bayespath, model_name=modelname, model_path=projectpath+'stancodes/')
-    fit = model.sampling(data=dat, seed=194838, chains=4, iter=4000, verbose=True)
+    fit = model.sampling(data=dat, seed=194838, chains=4, iter=1000, verbose=True)
     # length scale has inverse relation to relevancy of covariate
-    if config.model != 'linear':
+    if config.model == 'ard_se_gp':
         print('lengthscales')
         print(np.mean(fit.extract(permuted=True)['rho'], axis=0))
     if config.run_diagnostics:
-        stan_utility.check_all_diagnostics(fit)
         print(fit)
+        stan_utility.check_all_diagnostics(fit)
     return fit.extract(permuted=True)
 
 def fit_full(projectpath, train, query, test):

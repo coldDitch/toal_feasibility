@@ -32,6 +32,13 @@ def decision_ig(samples, data):
     """
     return expected_value_minimizer(samples, data, "decision_ig", entropy_of_maximizer_decision)
 
+def weighted_decision_ig(samples, data):
+    """
+    ad hoc weighting to account for equality of decisions
+    """
+    return expected_value_minimizer(samples, data, "decision_ig", entropy_of_maximizer_decision)
+
+
 def eig(samples, data):
     """
     acquisition which minimizes entropy of average utility
@@ -53,7 +60,7 @@ def estimate_entropy_1D(sampledata):
             # kernel density estimation and then Monte Carlo estimate of entropy
             kde = KernelDensity(kernel="gaussian", bandwidth=bandwidth).fit(
                 samples[:, i, d].reshape(-1, 1))
-            # number of samples determines the accuracy of estimate of 
+            # number of samples determines the accuracy of estimate of
             # one dimensional entropy, increase this if eig doesnt perform well
             y = kde.sample(500)
             entropy -= np.mean(kde.score_samples(y))
@@ -62,12 +69,13 @@ def estimate_entropy_1D(sampledata):
     return(np.mean(entropy))
 
 
+
 def expected_value_minimizer(samples, data, objective_utility, entropy_fun):
     """
     finds index i for query x_i, d_i in query set which minimizes the entropy_fun
     """
     def expected_entropy_fun(i):
-        """ 
+        """
         evaluates expected value for entropy_fun
         """
         # Gauss-Hermite quadrature to compute the integral,
@@ -130,6 +138,8 @@ def choose_criterion(criterion):
         return uncertainty_sampling_y
     elif criterion == "decision_ig":
         return decision_ig
+    elif criterion == "weighted_decision_ig":
+        return weighted_decision_ig
     elif criterion == "eig":
         return eig
     else:
